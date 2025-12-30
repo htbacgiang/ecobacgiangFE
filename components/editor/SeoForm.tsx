@@ -248,13 +248,10 @@ const SEOForm: FC<Props> = ({
             <option value="" disabled>
               Chọn một danh mục
             </option>
-            <option value="Thiết kế kiến trúc">Thiết kế kiến trúc</option>
-            <option value="Thiết kế nội thất">Thiết kế nội thất</option>
-            <option value="Thi công xây dựng">Thi công xây dựng</option>
-            <option value="Cải tạo không gian">Cải tạo không gian</option>
-            <option value="Xu hướng thiết kế">Xu hướng thiết kế</option>
-            <option value="Dự án hoàn thành">Dự án hoàn thành</option>
-            <option value="Tin tức công ty">Tin tức công ty</option>
+            <option value="Tin tức & xu hướng">Tin tức & xu hướng</option>
+            <option value="Chuyện của Farm">Chuyện của Farm</option>
+            <option value="Công thức nấu ăn">Công thức nấu ăn</option>
+            <option value="Sống xanh">Sống xanh</option>
           </select>
         </div>
         
