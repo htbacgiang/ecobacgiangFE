@@ -1620,10 +1620,13 @@ export default function Cart() {
                       ) : (
                         <>
                           <div className="bg-white p-4 rounded-lg shadow-md inline-block">
-                            <img
+                            <Image
                               src={qrUrl}
                               alt={`QR Code ${paymentMethod}`}
+                              width={256}
+                              height={256}
                               className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
+                              unoptimized
                               onError={(e) => {
                                   e.target.style.display = "none";
                                   e.target.nextSibling.style.display = "block";
@@ -1684,7 +1687,7 @@ export default function Cart() {
                                         <br />
                                         💳 {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? (
                                           <>
-                                            <span className="font-semibold">Đang ở môi trường local:</span> Sau khi chuyển khoản, vui lòng click nút "Đã chuyển khoản" bên dưới để xác nhận thủ công
+                                            <span className="font-semibold">Đang ở môi trường local:</span> Sau khi chuyển khoản, vui lòng click nút &quot;Đã chuyển khoản&quot; bên dưới để xác nhận thủ công
                                           </>
                                         ) : (
                                           "Hệ thống sẽ tự động xác nhận khi thanh toán thành công"
