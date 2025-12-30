@@ -1,0 +1,463 @@
+[
+  {
+    "maSanPham": "RAU-AN-LA-001",
+    "name": "Rau cải xanh hữu cơ",
+    "price": 25000,
+    "promotionalPrice": 22000,
+    "content": "<p>Rau cải xanh hữu cơ được trồng theo phương pháp tự nhiên, không sử dụng thuốc trừ sâu và phân bón hóa học. Sản phẩm tươi ngon, giàu dinh dưỡng, an toàn cho sức khỏe.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "rau-an-la",
+    "categoryNameVN": "Rau ăn lá",
+    "description": "Rau cải xanh hữu cơ tươi ngon, giàu vitamin và khoáng chất, được trồng theo phương pháp tự nhiên",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/rau-cai-xanh.jpg"
+    ],
+    "slug": "rau-cai-xanh-huu-co",
+    "rating": 4.5,
+    "reviewCount": 32,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "RAU-AN-LA-002",
+    "name": "Rau muống hữu cơ",
+    "price": 20000,
+    "promotionalPrice": 18000,
+    "content": "<p>Rau muống hữu cơ giòn ngon, không có thuốc trừ sâu, được trồng trong môi trường sạch sẽ, đảm bảo an toàn thực phẩm.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "rau-an-la",
+    "categoryNameVN": "Rau ăn lá",
+    "description": "Rau muống hữu cơ tươi ngon, giòn ngọt, không thuốc trừ sâu",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/rau-muong.jpg"
+    ],
+    "slug": "rau-muong-huu-co",
+    "rating": 4.3,
+    "reviewCount": 28,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "RAU-AN-LA-003",
+    "name": "Rau xà lách hữu cơ",
+    "price": 30000,
+    "promotionalPrice": 27000,
+    "content": "<p>Rau xà lách hữu cơ giòn ngon, lá xanh tươi, thích hợp cho các món salad và ăn sống.</p>",
+    "isNew": true,
+    "isFeatured": false,
+    "category": "rau-an-la",
+    "categoryNameVN": "Rau ăn lá",
+    "description": "Rau xà lách hữu cơ giòn ngon, lá xanh tươi, giàu chất xơ",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/rau-xa-lach.jpg"
+    ],
+    "slug": "rau-xa-lach-huu-co",
+    "rating": 4.7,
+    "reviewCount": 45,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "RAU-AN-LA-004",
+    "name": "Rau mồng tơi hữu cơ",
+    "price": 22000,
+    "promotionalPrice": 0,
+    "content": "<p>Rau mồng tơi hữu cơ mát lành, giàu vitamin A và chất xơ, tốt cho tiêu hóa.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "rau-an-la",
+    "categoryNameVN": "Rau ăn lá",
+    "description": "Rau mồng tơi hữu cơ mát lành, giàu vitamin A",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/rau-mong-toi.jpg"
+    ],
+    "slug": "rau-mong-toi-huu-co",
+    "rating": 4.2,
+    "reviewCount": 19,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "RAU-AN-LA-005",
+    "name": "Rau cải ngọt hữu cơ",
+    "price": 24000,
+    "promotionalPrice": 21000,
+    "content": "<p>Rau cải ngọt hữu cơ ngọt mát, giàu canxi và vitamin K, tốt cho xương khớp.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "rau-an-la",
+    "categoryNameVN": "Rau ăn lá",
+    "description": "Rau cải ngọt hữu cơ ngọt mát, giàu canxi",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/rau-cai-ngot.jpg"
+    ],
+    "slug": "rau-cai-ngot-huu-co",
+    "rating": 4.4,
+    "reviewCount": 36,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-001",
+    "name": "Cà rốt hữu cơ",
+    "price": 35000,
+    "promotionalPrice": 32000,
+    "content": "<p>Cà rốt hữu cơ ngọt ngon, giàu beta-carotene, tốt cho mắt và da.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Cà rốt hữu cơ ngọt ngon, giàu beta-carotene, tốt cho mắt",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/ca-rot.jpg"
+    ],
+    "slug": "ca-rot-huu-co",
+    "rating": 4.6,
+    "reviewCount": 52,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-002",
+    "name": "Khoai tây hữu cơ",
+    "price": 28000,
+    "promotionalPrice": 25000,
+    "content": "<p>Khoai tây hữu cơ thơm ngon, giàu tinh bột và kali, thích hợp cho nhiều món ăn.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Khoai tây hữu cơ thơm ngon, giàu tinh bột và kali",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/khoai-tay.jpg"
+    ],
+    "slug": "khoai-tay-huu-co",
+    "rating": 4.5,
+    "reviewCount": 41,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-003",
+    "name": "Củ cải trắng hữu cơ",
+    "price": 26000,
+    "promotionalPrice": 0,
+    "content": "<p>Củ cải trắng hữu cơ giòn ngọt, mát lành, tốt cho tiêu hóa và giải nhiệt.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Củ cải trắng hữu cơ giòn ngọt, mát lành",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/cu-cai-trang.jpg"
+    ],
+    "slug": "cu-cai-trang-huu-co",
+    "rating": 4.3,
+    "reviewCount": 24,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-004",
+    "name": "Củ hành tây hữu cơ",
+    "price": 32000,
+    "promotionalPrice": 29000,
+    "content": "<p>Hành tây hữu cơ thơm cay, giàu chất chống oxy hóa, tốt cho tim mạch.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Hành tây hữu cơ thơm cay, giàu chất chống oxy hóa",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/hanh-tay.jpg"
+    ],
+    "slug": "hanh-tay-huu-co",
+    "rating": 4.4,
+    "reviewCount": 33,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-005",
+    "name": "Củ tỏi hữu cơ",
+    "price": 45000,
+    "promotionalPrice": 40000,
+    "content": "<p>Tỏi hữu cơ thơm nồng, có tính kháng khuẩn cao, tốt cho hệ miễn dịch.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Tỏi hữu cơ thơm nồng, có tính kháng khuẩn cao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/toi.jpg"
+    ],
+    "slug": "toi-huu-co",
+    "rating": 4.8,
+    "reviewCount": 67,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "CU-QUA-006",
+    "name": "Ớt chuông hữu cơ",
+    "price": 55000,
+    "promotionalPrice": 50000,
+    "content": "<p>Ớt chuông hữu cơ giòn ngọt, giàu vitamin C, thích hợp cho salad và nấu ăn.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "cu-qua",
+    "categoryNameVN": "Củ - quả",
+    "description": "Ớt chuông hữu cơ giòn ngọt, giàu vitamin C",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/ot-chuong.jpg"
+    ],
+    "slug": "ot-chuong-huu-co",
+    "rating": 4.6,
+    "reviewCount": 48,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-001",
+    "name": "Đậu xanh hữu cơ",
+    "price": 60000,
+    "promotionalPrice": 55000,
+    "content": "<p>Đậu xanh hữu cơ giàu protein và chất xơ, thích hợp nấu chè, làm bánh và nấu ăn.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Đậu xanh hữu cơ giàu protein và chất xơ",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/dau-xanh.jpg"
+    ],
+    "slug": "dau-xanh-huu-co",
+    "rating": 4.7,
+    "reviewCount": 58,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-002",
+    "name": "Đậu đen hữu cơ",
+    "price": 58000,
+    "promotionalPrice": 53000,
+    "content": "<p>Đậu đen hữu cơ bổ dưỡng, giàu chất sắt, tốt cho máu và tim mạch.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Đậu đen hữu cơ bổ dưỡng, giàu chất sắt",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/dau-den.jpg"
+    ],
+    "slug": "dau-den-huu-co",
+    "rating": 4.5,
+    "reviewCount": 42,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-003",
+    "name": "Gạo lứt hữu cơ",
+    "price": 45000,
+    "promotionalPrice": 42000,
+    "content": "<p>Gạo lứt hữu cơ giàu chất xơ và vitamin B, tốt cho sức khỏe và giảm cân.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Gạo lứt hữu cơ giàu chất xơ và vitamin B",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/gao-lut.jpg"
+    ],
+    "slug": "gao-lut-huu-co",
+    "rating": 4.8,
+    "reviewCount": 89,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-004",
+    "name": "Mè đen hữu cơ",
+    "price": 85000,
+    "promotionalPrice": 78000,
+    "content": "<p>Mè đen hữu cơ giàu canxi và omega-3, tốt cho xương và não bộ.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Mè đen hữu cơ giàu canxi và omega-3",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/me-den.jpg"
+    ],
+    "slug": "me-den-huu-co",
+    "rating": 4.6,
+    "reviewCount": 35,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-005",
+    "name": "Hạt sen khô hữu cơ",
+    "price": 120000,
+    "promotionalPrice": 110000,
+    "content": "<p>Hạt sen khô hữu cơ thơm ngon, bổ dưỡng, thích hợp nấu chè và làm thuốc.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Hạt sen khô hữu cơ thơm ngon, bổ dưỡng",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/hat-sen.jpg"
+    ],
+    "slug": "hat-sen-kho-huu-co",
+    "rating": 4.9,
+    "reviewCount": 76,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "THUC-PHAM-KHO-006",
+    "name": "Đậu phộng hữu cơ",
+    "price": 65000,
+    "promotionalPrice": 60000,
+    "content": "<p>Đậu phộng hữu cơ giòn thơm, giàu protein và chất béo tốt.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "thuc-pham-kho",
+    "categoryNameVN": "Thực phẩm khô",
+    "description": "Đậu phộng hữu cơ giòn thơm, giàu protein",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/dau-phong.jpg"
+    ],
+    "slug": "dau-phong-huu-co",
+    "rating": 4.4,
+    "reviewCount": 29,
+    "stockStatus": "Còn hàng",
+    "unit": "Kg"
+  },
+  {
+    "maSanPham": "OCOP-001",
+    "name": "Mật ong rừng OCOP",
+    "price": 250000,
+    "promotionalPrice": 230000,
+    "content": "<p>Mật ong rừng OCOP nguyên chất, được chứng nhận OCOP 3 sao, tốt cho sức khỏe và làm đẹp.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Mật ong rừng OCOP nguyên chất, chứng nhận OCOP 3 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/mat-ong.jpg"
+    ],
+    "slug": "mat-ong-rung-ocop",
+    "rating": 4.9,
+    "reviewCount": 124,
+    "stockStatus": "Còn hàng",
+    "unit": "chai"
+  },
+  {
+    "maSanPham": "OCOP-002",
+    "name": "Tinh bột nghệ OCOP",
+    "price": 180000,
+    "promotionalPrice": 165000,
+    "content": "<p>Tinh bột nghệ OCOP nguyên chất, được chứng nhận OCOP 4 sao, tốt cho dạ dày và làm đẹp da.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Tinh bột nghệ OCOP nguyên chất, chứng nhận OCOP 4 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/tinh-bot-nghe.jpg"
+    ],
+    "slug": "tinh-bot-nghe-ocop",
+    "rating": 4.8,
+    "reviewCount": 98,
+    "stockStatus": "Còn hàng",
+    "unit": "túi"
+  },
+  {
+    "maSanPham": "OCOP-003",
+    "name": "Trà shan tuyết OCOP",
+    "price": 320000,
+    "promotionalPrice": 290000,
+    "content": "<p>Trà shan tuyết OCOP thượng hạng, được chứng nhận OCOP 5 sao, hương vị đậm đà, tốt cho sức khỏe.</p>",
+    "isNew": true,
+    "isFeatured": true,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Trà shan tuyết OCOP thượng hạng, chứng nhận OCOP 5 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/tra-shan-tuyet.jpg"
+    ],
+    "slug": "tra-shan-tuyet-ocop",
+    "rating": 5.0,
+    "reviewCount": 156,
+    "stockStatus": "Còn hàng",
+    "unit": "túi"
+  },
+  {
+    "maSanPham": "OCOP-004",
+    "name": "Mứt dừa OCOP",
+    "price": 95000,
+    "promotionalPrice": 85000,
+    "content": "<p>Mứt dừa OCOP thơm ngon, được chứng nhận OCOP 3 sao, không chất bảo quản.</p>",
+    "isNew": false,
+    "isFeatured": false,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Mứt dừa OCOP thơm ngon, chứng nhận OCOP 3 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/mut-dua.jpg"
+    ],
+    "slug": "mut-dua-ocop",
+    "rating": 4.5,
+    "reviewCount": 47,
+    "stockStatus": "Còn hàng",
+    "unit": "túi"
+  },
+  {
+    "maSanPham": "OCOP-005",
+    "name": "Rượu nếp cẩm OCOP",
+    "price": 150000,
+    "promotionalPrice": 135000,
+    "content": "<p>Rượu nếp cẩm OCOP truyền thống, được chứng nhận OCOP 4 sao, thơm ngon, bổ dưỡng.</p>",
+    "isNew": false,
+    "isFeatured": true,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Rượu nếp cẩm OCOP truyền thống, chứng nhận OCOP 4 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/ruou-nep-cam.jpg"
+    ],
+    "slug": "ruou-nep-cam-ocop",
+    "rating": 4.7,
+    "reviewCount": 82,
+    "stockStatus": "Còn hàng",
+    "unit": "chai"
+  },
+  {
+    "maSanPham": "OCOP-006",
+    "name": "Bánh đậu xanh OCOP",
+    "price": 75000,
+    "promotionalPrice": 68000,
+    "content": "<p>Bánh đậu xanh OCOP thơm ngon, được chứng nhận OCOP 3 sao, không chất bảo quản.</p>",
+    "isNew": true,
+    "isFeatured": false,
+    "category": "san-pham-ocop",
+    "categoryNameVN": "Sản phẩm OCOP",
+    "description": "Bánh đậu xanh OCOP thơm ngon, chứng nhận OCOP 3 sao",
+    "image": [
+      "https://res.cloudinary.com/dcgtt1jza/image/upload/v1/sample/banh-dau-xanh.jpg"
+    ],
+    "slug": "banh-dau-xanh-ocop",
+    "rating": 4.6,
+    "reviewCount": 61,
+    "stockStatus": "Còn hàng",
+    "unit": "túi"
+  }
+]
+
