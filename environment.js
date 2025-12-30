@@ -2,6 +2,11 @@
 // Copy this to .env.local file
 
 module.exports = {
+  // Server API URL - REQUIRED
+  // This is the URL of the separate Node.js API server
+  // All API calls will be made to this server instead of Next.js API routes
+  NEXT_PUBLIC_API_SERVER_URL: "http://localhost:5000/api",
+  
   // MongoDB
   MONGODB_URI: "mongodb://localhost:27017/ecobacgiang",
   

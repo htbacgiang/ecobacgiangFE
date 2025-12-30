@@ -12,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-datepicker/dist/react-datepicker.css";
 import Head from "next/head";
 import { useEffect } from "react";
+import ApiConfigWarning from "../components/common/ApiConfigWarning";
 
 let persistor = persistStore(store);
 // Khởi tạo font Rajdhani từ Google Fonts
@@ -22,17 +23,27 @@ const rajdhani = Rajdhani({
   variable: "--ltn__heading-font",
 });
   function MyApp({ Component, pageProps: { session, meta, ...pageProps } }) {
-  // Debug: Log API configuration (chỉ trong development)
+  // Debug: Log API configuration (cả development và production để debug VPS)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 API Configuration:');
-      console.log('  NEXT_PUBLIC_API_SERVER_URL:', process.env.NEXT_PUBLIC_API_SERVER_URL || 'NOT SET ❌');
-      console.log('  NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || 'NOT SET');
-      if (process.env.NEXT_PUBLIC_API_SERVER_URL) {
-        console.log('  ✅ Using API Server:', process.env.NEXT_PUBLIC_API_SERVER_URL);
-      } else {
-        console.log('  ❌ Using Next.js API routes (fallback)');
-      }
+    console.log('🔍 API Configuration:');
+    console.log('  Environment:', process.env.NODE_ENV || 'unknown');
+    console.log('  NEXT_PUBLIC_API_SERVER_URL:', process.env.NEXT_PUBLIC_API_SERVER_URL || 'NOT SET ❌');
+    
+    if (!process.env.NEXT_PUBLIC_API_SERVER_URL) {
+      console.error('  ❌ LỖI: NEXT_PUBLIC_API_SERVER_URL chưa được cấu hình!');
+      console.error('  📝 Hướng dẫn sửa lỗi:');
+      console.error('     1. Tạo/sửa file .env.production trong thư mục EcoBacgiangFE');
+      console.error('     2. Thêm dòng: NEXT_PUBLIC_API_SERVER_URL=https://your-api-domain.com/api');
+      console.error('     3. Rebuild app: npm run build');
+      console.error('     4. Restart app: npm start');
+      console.error('  ⚠️ Lưu ý: Biến NEXT_PUBLIC_* phải được set TRƯỚC KHI BUILD!');
+    } else {
+      // Mask URL để bảo mật nhưng vẫn có thể debug
+      const url = process.env.NEXT_PUBLIC_API_SERVER_URL;
+      const masked = url.replace(/(https?:\/\/)([^\/]+)(.*)/, (match, protocol, host, path) => {
+        return `${protocol}${host.substring(0, 15)}...${path}`;
+      });
+      console.log('  ✅ Using API Server:', masked);
     }
 
     // Check Server API health và clear NextAuth session nếu Server API không chạy
@@ -107,6 +118,7 @@ const rajdhani = Rajdhani({
               <meta name="twitter:image" content={meta.twitter.image} />
             </Head>
           )}
+          <ApiConfigWarning />
           <SessionProvider session={session}>
             <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>

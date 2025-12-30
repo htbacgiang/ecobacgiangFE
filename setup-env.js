@@ -2,7 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 // Environment variables template
-const envTemplate = `# MongoDB
+const envTemplate = `# Server API URL - REQUIRED
+# This is the URL of the separate Node.js API server
+# All API calls will be made to this server instead of Next.js API routes
+NEXT_PUBLIC_API_SERVER_URL=http://localhost:5000/api
+
+# MongoDB
 MONGODB_URI=mongodb://localhost:27017/ecobacgiang
 
 # NextAuth
