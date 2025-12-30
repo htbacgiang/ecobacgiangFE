@@ -90,6 +90,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    emailVerificationOTP: {
+      type: String,
+    },
+    emailVerificationOTPExpiry: {
+      type: Date,
+    },
+    emailVerificationSentAt: {
+      type: Date,
+    },
     agree: { type: Boolean, required: true },
     defaultPaymentMethod: {
       type: String,
