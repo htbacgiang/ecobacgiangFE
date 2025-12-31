@@ -613,13 +613,14 @@ export default function Cart() {
   };
 
   // Manually confirm Sepay payment
+  // LƯU Ý: Chỉ cho phép xác nhận khi đã có webhook từ Sepay (bằng chứng đã chuyển khoản)
   const handleConfirmPayment = async () => {
     if (!paymentCode) {
       toast.error("Không có mã thanh toán");
       return;
     }
 
-    if (!window.confirm("Bạn đã chuyển khoản thành công? Hệ thống sẽ xác nhận thanh toán ngay lập tức.")) {
+    if (!window.confirm("Bạn đã chuyển khoản thành công? Hệ thống sẽ kiểm tra và xác nhận thanh toán.")) {
       return;
     }
 
@@ -649,9 +650,21 @@ export default function Cart() {
       }
     } catch (err) {
       console.error("Confirm payment error:", err);
-      const errorMessage =
-        err.response?.data?.error || "Không thể xác nhận thanh toán!";
-      toast.error(errorMessage);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Không thể xác nhận thanh toán!";
+      const suggestion = err.response?.data?.suggestion || "";
+      
+      // Hiển thị thông báo lỗi chi tiết hơn
+      if (errorMessage.includes("chưa nhận được xác nhận từ ngân hàng")) {
+        toast.error(
+          <div>
+            <div className="font-semibold">{errorMessage}</div>
+            {suggestion && <div className="text-sm mt-1">{suggestion}</div>}
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoadingPayment(false);
     }
@@ -1718,11 +1731,9 @@ export default function Cart() {
                                         "✅ Đã chuyển khoản - Xác nhận ngay"
                                       )}
                                     </button>
-                                    {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
-                                      <p className="text-xs text-gray-500 mt-2 text-center">
-                                        💡 <strong>Lưu ý:</strong> Webhook Sepay chỉ hoạt động với domain thật. Ở môi trường local, vui lòng dùng nút này để xác nhận thủ công sau khi đã chuyển khoản.
-                                      </p>
-                                    )}
+                                    <p className="text-xs text-gray-600 mt-2 text-center bg-yellow-50 p-2 rounded border border-yellow-200">
+                                      ⚠️ <strong>Lưu ý:</strong> Nút này chỉ hoạt động sau khi hệ thống đã nhận được xác nhận từ ngân hàng (webhook). Nếu bạn đã chuyển khoản nhưng nút này không hoạt động, vui lòng đợi vài phút để hệ thống tự động xác nhận.
+                                    </p>
                                   </>
                                 )}
                               </div>
