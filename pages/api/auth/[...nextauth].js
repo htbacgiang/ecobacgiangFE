@@ -65,20 +65,39 @@ export const authOptions = {
           if (!email && !phone) {
             throw new Error("Vui lòng nhập email hoặc số điện thoại.");
           }
+          
+          // Normalize email để đảm bảo match với database
+          const normalizedEmail = email ? email.toLowerCase().trim() : null;
+          
           const user = await User.findOne({
             $or: [
-              email ? { email } : null,
+              normalizedEmail ? { email: normalizedEmail } : null,
               phone ? { phone } : null,
             ].filter(Boolean),
           });
           if (!user) {
             throw new Error("Email hoặc số điện thoại không tồn tại.");
           }
+          
+          // Check if email is verified (giống như signin API)
+          if (!user.emailVerified) {
+            throw new Error("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản.");
+          }
+          
           const isMatch = await bcrypt.compare(password, user.password);
           if (!isMatch) {
             throw new Error("Mật khẩu không đúng.");
           }
-          return user;
+          
+          // Return user object với id để NextAuth có thể tạo session
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            role: user.role || "user",
+            emailVerified: user.emailVerified,
+            image: user.image,
+          };
         } catch (error) {
           console.error("Authorization error:", error);
           throw new Error(error.message || "Lỗi máy chủ.");
@@ -248,6 +267,8 @@ export const authOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days (giống với JWT token expiry)
+    updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key-for-development",
   // Đảm bảo URL đúng - override nếu cần

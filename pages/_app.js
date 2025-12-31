@@ -46,11 +46,14 @@ const rajdhani = Rajdhani({
       console.log('  ✅ Using API Server:', masked);
     }
 
-    // Check Server API health và clear NextAuth session nếu Server API không chạy
+    // Check Server API health (chỉ để log, không clear session)
+    // Lưu ý: Auth APIs đã chuyển sang Next.js API, không cần Server API nữa
+    // Các API khác (products, posts, etc.) vẫn cần Server API
     const checkServerHealth = async () => {
       const apiUrl = process.env.NEXT_PUBLIC_API_SERVER_URL;
       if (!apiUrl) {
-        throw new Error('NEXT_PUBLIC_API_SERVER_URL is not defined. Please set it in your .env file.');
+        // Không có Server API URL → không check (auth APIs dùng Next.js API)
+        return;
       }
       const healthUrl = apiUrl.replace('/api', '') + '/health';
       
@@ -67,29 +70,20 @@ const rajdhani = Rajdhani({
         clearTimeout(timeoutId);
         
         if (!response.ok) {
-          // Server API không chạy → Clear NextAuth session
-          if (typeof window !== 'undefined') {
-            const { signOut } = await import('next-auth/react');
-            await signOut({ redirect: false });
-            console.warn('⚠️ Server API không chạy - Đã clear NextAuth session');
-          }
+          // Server API không chạy → chỉ log warning, KHÔNG clear session
+          // Vì auth APIs đã không dùng Server API nữa
+          console.warn('⚠️ Server API không chạy (các API products/posts có thể không hoạt động)');
+        } else {
+          console.log('✅ Server API đang chạy');
         }
       } catch (error) {
         clearTimeout(timeoutId);
-        // Server API không chạy → Clear NextAuth session
-        if (typeof window !== 'undefined') {
-          try {
-            const { signOut } = await import('next-auth/react');
-            await signOut({ redirect: false });
-            console.warn('⚠️ Server API không chạy - Đã clear NextAuth session');
-          } catch (signOutError) {
-            // Ignore signOut errors
-          }
-        }
+        // Server API không chạy → chỉ log warning, KHÔNG clear session
+        console.warn('⚠️ Không thể kết nối đến Server API (các API products/posts có thể không hoạt động)');
       }
     };
 
-    // Chỉ check khi có NEXT_PUBLIC_API_SERVER_URL
+    // Chỉ check khi có NEXT_PUBLIC_API_SERVER_URL (optional check, không ảnh hưởng session)
     if (process.env.NEXT_PUBLIC_API_SERVER_URL && typeof window !== 'undefined') {
       checkServerHealth();
     }

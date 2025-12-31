@@ -68,19 +68,34 @@ export default function Signin({ providers, callbackUrl, csrfToken }) {
       const user = response.user;
       const redirectUrl = user?.role === "admin" ? "/dashboard" : (callbackUrl || "/");
       
-      // Đợi NextAuth session được tạo (nếu cần cho dashboard)
-      // Đợi thêm một chút để đảm bảo session được sync
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Kiểm tra lại session nếu redirect đến dashboard
+      // Nếu redirect đến dashboard, đảm bảo NextAuth session đã được tạo
       if (redirectUrl === "/dashboard") {
-        const session = await getSession();
-        if (!session) {
-          console.warn("NextAuth session chưa được tạo, có thể cần refresh");
+        // Đợi NextAuth session được tạo và refresh
+        let session = null;
+        let retryCount = 0;
+        const maxRetries = 5;
+        
+        while (!session && retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+          session = await getSession();
+          retryCount++;
+          
+          if (!session && retryCount < maxRetries) {
+            console.log(`Đang đợi NextAuth session... (lần thử ${retryCount}/${maxRetries})`);
+          }
         }
+        
+        if (!session) {
+          console.error("NextAuth session không được tạo sau nhiều lần thử");
+          toast.error("Đăng nhập thành công nhưng không thể tạo session. Vui lòng thử lại.");
+          return;
+        }
+        
+        console.log("NextAuth session đã được tạo thành công");
       }
       
-      setTimeout(() => router.push(redirectUrl), 1000);
+      // Redirect sau khi đảm bảo session đã sẵn sàng
+      setTimeout(() => router.push(redirectUrl), 500);
     } catch (error) {
       setStatus(`Lỗi: ${error.message || "Đã xảy ra lỗi khi đăng nhập"}`);
       toast.error(error.message || "Đã xảy ra lỗi");
