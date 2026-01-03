@@ -6754,3 +6754,100 @@ html {
 .service-text-orange {
   color: #b45309;
 }
+
+/* Featured Product Gradients */
+.featured-bg-gradient {
+  background: linear-gradient(to bottom right, #f0fdf4, #d1fae5, #ccfbf1);
+}
+
+.featured-title-gradient {
+  background: linear-gradient(to right, #16a34a, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.featured-bar-gradient {
+  background: linear-gradient(to bottom, #22c55e, #10b981);
+}
+
+.featured-hot-badge-gradient {
+  background: linear-gradient(to right, #ef4444, #ec4899);
+}
+
+.featured-btn-gradient {
+  background: linear-gradient(to right, #22c55e, #10b981, #14b8a6);
+}
+
+/* Chat Interface Styles */
+.chat-header {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #16a34a 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.3);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.chat-send-btn {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+  transition: all 0.2s ease;
+}
+
+.chat-send-btn:hover {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
+}
+
+.chat-send-btn:disabled {
+  background: #d1d5db;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Chat message bubbles enhancements */
+.chat-user-message {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.chat-bot-message {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat input enhancements */
+.chat-input {
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.chat-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+/* Chat widget container */
+.chat-container {
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.featured-btn-gradient:hover {
+  background: linear-gradient(to right, #16a34a, #059669, #0d9488);
+}

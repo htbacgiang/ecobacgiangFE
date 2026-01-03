@@ -18,5 +18,6 @@ export const orderStatusColors = {
 export const paymentMethodText = {
   COD: "Thanh toán khi nhận hàng",
   BankTransfer: "Chuyển khoản ngân hàng",
+  Sepay: "Thanh toán qua Sepay",
   MoMo: "Thanh toán qua MoMo",
 };

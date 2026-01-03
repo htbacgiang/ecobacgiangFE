@@ -429,43 +429,71 @@ export default function Product3() {
               </ul>
             </div>
             {/* Sản phẩm nổi bật */}
-            <div className="product-sidebar-featured mt-6 p-5 rounded-2xl shadow-lg flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <div className="mt-6 relative overflow-hidden rounded-2xl featured-bg-gradient p-4 shadow-xl border border-green-200/50 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group">
+              {/* Decorative background elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-200/20 rounded-full blur-2xl -ml-12 -mb-12"></div>
+              
               <div className="relative z-10 w-full">
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-2xl">⭐</span>
-                  <h3 className="product-sidebar-featured-title text-lg font-bold ml-2">
-                    Sản phẩm nổi bật
-                  </h3>
+                {/* Header */}
+                <div className="flex items-center justify-center mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-6 featured-bar-gradient rounded-full"></div>
+                    <h3 className="text-xl font-bold featured-title-gradient">
+                      Sản phẩm nổi bật
+                    </h3>
+                    <div className="w-1 h-6 featured-bar-gradient rounded-full"></div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-600 mb-4">Khám phá những sản phẩm chất lượng cao</p>
+                <p className="text-sm text-gray-600 mb-5 font-medium">Khám phá những sản phẩm chất lượng cao</p>
                 
-                <div className="w-full bg-white rounded-xl p-3 shadow-md border border-green-100 transition-all duration-300 hover:shadow-lg">
-                  <div className="relative overflow-hidden rounded-lg mb-3">
+                {/* Product Card */}
+                <div className="w-full bg-white/90 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-green-100/50 transition-all duration-300 hover:shadow-xl hover:border-green-300 group-hover:bg-white">
+                  <div className="relative overflow-hidden rounded-xl mb-4 group/image">
                     <img
                       src="https://orgado.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fflash-banner-01.7f962f08.jpg&w=640&q=75"
                       alt="Sản phẩm nổi bật"
-                      className="w-full h-24 object-cover rounded-lg"
+                      className="w-full h-28 object-cover rounded-xl transition-transform duration-500 group-hover/image:scale-110"
                     />
-                    <div className="absolute top-1.5 right-1.5 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-                      HOT
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+                    {/* HOT Badge with animation */}
+                    <div className="absolute top-2 right-2 featured-hot-badge-gradient text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse hover:animate-none hover:scale-110 transition-transform duration-200">
+                      🔥 HOT
                     </div>
                   </div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1">Khoai tây hữu cơ</h4>
-                  <div className="flex items-center justify-center space-x-1 mb-2">
-                    <span className="text-yellow-400 text-xs">★★★★★</span>
-                    <span className="text-xs text-gray-500">(4.8)</span>
+                  
+                  {/* Product Info */}
+                  <h4 className="font-bold text-gray-900 text-base text-center mb-2 leading-tight">Khoai tây hữu cơ</h4>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center justify-center space-x-2 mb-3">
+                    <div className="flex items-center space-x-1">
+                      <span className="text-yellow-400 text-sm">★★★★★</span>
+                    </div>
+                    <span className="text-xs text-gray-600 font-medium bg-gray-100 px-2 py-0.5 rounded-full">4.8</span>
                   </div>
-                  <p className="text-green-600 font-bold text-base mb-3">
-                    <span className="text-gray-400 line-through text-xs mr-1">60,000₫</span>
-                    Từ 45,000₫
-                  </p>
+                  
+                  {/* Price */}
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    <span className="text-gray-400 line-through text-sm font-medium">60,000₫</span>
+                    <span className="text-green-600 font-bold text-lg bg-green-50 px-3 py-1 rounded-lg">
+                      Từ 45,000₫
+                    </span>
+                  </div>
                 </div>
                 
-                <div className="mt-4">
-                  <button className="product-sidebar-btn inline-flex items-center justify-center text-white text-xs font-bold px-5 py-2 rounded-full shadow-md">
-                    <span>Xem ngay</span>
-                    <svg className="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                {/* CTA Button */}
+                <div className="mt-5">
+                  <button className="w-full inline-flex items-center justify-center featured-btn-gradient text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group/btn">
+                    <span className="mr-2">Xem ngay</span>
+                    <svg 
+                      className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>

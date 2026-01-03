@@ -4,12 +4,16 @@ import React, { useState, useEffect } from 'react';
 import ChatButton from './ChatButton';
 import ChatInterface from './ChatInterface';
 import { useChatbot } from '../../hooks/useChatbot';
+import useAuth from '../../hooks/useAuth';
 
 const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
+  const user = useAuth();
+  const userAvatar = user?.avatar;
+
   const {
     messages,
     isLoading,
@@ -76,6 +80,7 @@ const ChatWidget: React.FC = () => {
         onSendMessage={handleSendMessage}
         isConnected={isConnected}
         onClearMessages={clearMessages}
+        userAvatar={userAvatar}
       />
     </>
   );

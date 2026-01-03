@@ -1207,7 +1207,7 @@ export default function OrderList() {
     <div className="w-full">
       <Toaster position="top-right" />
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Danh sách đơn hàng</h1>
+        <h2 className="text-xl font-bold text-gray-900">Đơn hàng mới nhất</h2>
         <button
           onClick={openCreateOrder}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"

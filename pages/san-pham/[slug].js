@@ -15,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import { addToCart, increaseQuantity, decreaseQuantity, setCart } from '../../store/cartSlice';
 import axios from 'axios';
 import parse from 'html-react-parser';
+import ProductSlider from '../../components/ecobacgiang/ProductSlider';
 
 // Environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_SERVER_URL || process.env.NEXT_PUBLIC_API_URL;
@@ -85,12 +86,13 @@ function StarRating({ rating, uniqueId }) {
 }
 
 // Main Component
-export default function ProductDetailPage({ product }) {
+export default function ProductDetailPage({ product, relatedProducts = [] }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { data: session } = useSession();
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   // Get cart items from Redux
   const cartItems = useSelector((state) => state.cart.cartItems) || [];
@@ -571,11 +573,62 @@ export default function ProductDetailPage({ product }) {
 
         {/* Product Details Section */}
         <div className="mt-8 max-w-6xl mx-auto">
-          <h2 className="text-xl font-bold text-green-600 mb-2">CHI TIẾT SẢN PHẨM</h2>
-          <div>
-            {parse(product.content || '<p class="text-gray-700">Không có thông tin chi tiết sản phẩm.</p>')}
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-6 bg-green-600 rounded-full"></div>
+              <h2 className="text-xl md:text-xl font-bold text-green-600">Chi tiết sản phẩm</h2>
+            </div>
+            <div className="relative">
+              <div 
+                className={`prose blog prose-base md:prose-lg max-w-none text-gray-700 transition-all duration-500 ${
+                  !isContentExpanded ? 'max-h-96 overflow-hidden' : ''
+                }`}
+              >
+                {parse(product.content || '<p class="text-gray-600">Không có thông tin chi tiết sản phẩm.</p>')}
+              </div>
+              {!isContentExpanded && (
+                <>
+                  {/* Gradient fade overlay */}
+                  <div 
+                    className="absolute bottom-3 left-0 right-0 h-40 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 40%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.3) 75%, rgba(255, 255, 255, 0) 100%)'
+                    }}
+                  ></div>
+                  {/* Expand button */}
+                  <div className="relative mt-3 flex justify-center">
+                    <button
+                      onClick={() => setIsContentExpanded(true)}
+                      className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                      aria-label="Xem đầy đủ bài viết"
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
+                </>
+              )}
+              {isContentExpanded && (
+                <div className="mt-3 flex justify-center">
+                  <button
+                    onClick={() => setIsContentExpanded(false)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    aria-label="Thu gọn bài viết"
+                  >
+                    Thu gọn bài viết
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Related Products Section */}
+        {relatedProducts && relatedProducts.length > 0 && (
+          <ProductSlider
+            title="Sản phẩm liên quan"
+            products={relatedProducts}
+          />
+        )}
       </div>
     </DefaultLayout>
   );
@@ -599,6 +652,37 @@ export async function getServerSideProps({ params }) {
     }
 
     const product = data.product;
+
+    // Fetch all products to find related products
+    const allProductsRes = await fetch(`${apiBaseUrl}/products`);
+    const allProductsData = await allProductsRes.json();
+    const allProducts = allProductsData.products || [];
+
+    // Filter related products (same category, exclude current product)
+    const availableProducts = allProducts.filter(
+      p => p.slug !== product.slug && p.category === product.category
+    );
+    
+    // Shuffle array and take 6 random products from same category
+    const shuffled = [...availableProducts].sort(() => 0.5 - Math.random());
+    const relatedProductsFiltered = shuffled.slice(0, 6);
+
+    // Format related products
+    const relatedProducts = relatedProductsFiltered.map(p => ({
+      _id: p._id || p.id,
+      name: p.name,
+      price: p.price,
+      promotionalPrice: p.promotionalPrice || 0,
+      image: Array.isArray(p.image) && p.image.length > 0 ? p.image : [p.image || '/images/placeholder.jpg'],
+      slug: p.slug || '',
+      rating: p.rating || 0,
+      reviewCount: p.reviewCount || 0,
+      stockStatus: p.stockStatus || 'Còn hàng',
+      unit: p.unit || '',
+      category: p.category || '',
+      categoryNameVN: p.categoryNameVN || '',
+      description: p.description || '',
+    }));
     const defaultImage = '/default-image.jpg';
     const productName = product?.name || 'Nông sản Eco Bắc Giang';
     const productDescription = product?.description ||
@@ -667,6 +751,7 @@ export async function getServerSideProps({ params }) {
       props: {
         meta,
         product,
+        relatedProducts,
       },
     };
   } catch (error) {

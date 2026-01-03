@@ -41,20 +41,20 @@ const Footer = () => {
 
       {/* Main Footer */}
       <footer className="bg-gradient-to-br from-green-50 to-green-100">
-        <div className="container mx-auto max-w-7xl px-6 py-16">
+        <div className="container mx-auto max-w-7xl px-6 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
-            <div className="space-y-3">
+            <div className="space-y-1">
               <Link href="/" className="inline-block">
                 <Image
                   src="/logo1.png"
                   alt="Eco Bac Giang Logo"
                   width={140}
                   height={50}
-                  className="mb-6"
+                  className=""
                 />
               </Link>
-              <p className="text-gray-700 leading-relaxed text-base">
+              <p className="text-gray-700 leading-relaxed text-base py-2">
                 Eco Bắc Giang là nền tảng tiên phong trong lĩnh vực nông nghiệp thông minh và sản xuất hữu cơ bền vững tại Việt Nam
               </p>
               
@@ -79,16 +79,7 @@ const Footer = () => {
                   <span className="text-gray-700 text-base font-medium">lienhe@ecobacgiang.vn</span>
                 </div>
               </div>
-{/* 
-              <div className="pt-4">
-                <Image
-                  src="/thongbaoBCT.png"
-                  alt="Bộ Công Thương Logo"
-                  width={120}
-                  height={40}
-                  className="opacity-80 hover:opacity-100 transition-opacity duration-300"
-                />
-              </div> */}
+
             </div>
 
             {/* About Us */}
@@ -168,7 +159,7 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="text-center md:text-left mb-2 md:mb-0">
                 <p className="text-gray-600">
-                  © {currentYear} Eco Bắc Giang. Tất cả quyền được bảo lưu.
+                  © {currentYear} Eco Bắc Giang.
                 </p>
               </div>
               
@@ -191,11 +182,11 @@ const Footer = () => {
         </div>
 
         {/* Company Brand Statement */}
-        <div className="border-t border-green-200 py-4 bg-white">
+        <div className="border-t border-green-200 py-4 bg-white pb-20 md:pb-2">
           <div className="container mx-auto px-4">
             <div className="text-center">
               <p className="text-gray-600 text-base">
-                Hợp tác xã Nông nghiệp thông minh Eco Bắc Giang
+                HTX Nông nghiệp thông minh Eco Bắc Giang
               </p>
             </div>
           </div>

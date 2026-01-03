@@ -28,16 +28,11 @@ const QualityPolicy = () => {
             <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
             Tầm Nhìn & Sứ Mệnh
           </div>
-          <h2 className={`text-3xl md:text-4xl font-bold text-gray-800 mb-4 transition-all duration-1000 delay-300 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            Tương Lai Và{" "}
-            <span className="text-green-700">Sứ Mệnh</span>
-          </h2>
+         
           <div className={`w-20 h-1 bg-green-600 rounded-full mx-auto mb-6 transition-all duration-1000 delay-500 ${
             isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
           }`}></div>
-          <p className={`text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed transition-all duration-1000 delay-700 ${
+          <p className={`text-base text-gray-700 max-w-5xl mx-auto leading-relaxed transition-all duration-1000 delay-700 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             Eco Bắc Giang không chỉ dừng lại ở việc sản xuất thực phẩm hữu cơ mà còn mong muốn tạo nên sự thay đổi lớn hơn.
@@ -92,8 +87,8 @@ const QualityPolicy = () => {
                       {mission.icon}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">{mission.title}</h3>
-                      <p className="text-gray-700 leading-relaxed">{mission.description}</p>
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 font-heading">{mission.title}</h3>
+                      <p className="text-gray-700 text-base leading-relaxed">{mission.description}</p>
                     </div>
                   </div>
                 </div>
@@ -104,8 +99,8 @@ const QualityPolicy = () => {
             <div className={`bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-6 text-center text-black shadow-lg transition-all duration-1000 delay-1700 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}>
-              <h3 className="text-xl font-bold mb-2">Hãy Cùng Chúng Tôi</h3>
-              <p className="text-green-500">
+              <h3 className="text-xl md:text-2xl font-bold mb-2 font-heading">Hãy Cùng Chúng Tôi</h3>
+              <p className="text-green-500 text-base">
                 Xây dựng tương lai nông nghiệp bền vững cho Việt Nam
               </p>
             </div>
@@ -126,7 +121,7 @@ const QualityPolicy = () => {
               {/* Overlay Content */}
               <div className="absolute bottom-6 left-6 right-6 z-20">
                 <div className="bg-white/90 backdrop-blur-base rounded-xl p-6 shadow-lg">
-                  <h3 className="text-lg font-bold text-green-700 mb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-green-700 mb-2 font-heading">
                     Tương Lai Xanh
                   </h3>
                   <p className="text-gray-700 text-base">

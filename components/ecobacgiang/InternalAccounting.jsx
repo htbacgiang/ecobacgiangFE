@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Filter, Plus, Edit, Trash2, Search, Calendar, FileText, Users, Package, AlertCircle, ExternalLink, ArrowLeftRight, Building2, BarChart3, PieChart, Lock, Unlock, Settings } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/router';
@@ -237,6 +237,91 @@ export default function InternalAccounting() {
     'Khác',
   ];
 
+  // Fetch Profit & Loss Report (wrapped in useCallback to avoid initialization error)
+  const fetchProfitLossReport = useCallback(async () => {
+    try {
+      setLoadingPL(true);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL;
+      if (!apiBaseUrl) {
+        throw new Error('NEXT_PUBLIC_API_SERVER_URL is not defined. Please set it in your .env file.');
+      }
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const params = new URLSearchParams({
+        startDate: reportDateRange.startDate,
+        endDate: reportDateRange.endDate,
+      });
+
+      const response = await fetch(`${apiBaseUrl}/accounting/profit-loss?${params}`, {
+        method: 'GET',
+        headers: headers,
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProfitLossData(data);
+      } else {
+        console.error('Error fetching P&L report:', response.statusText);
+        setProfitLossData(null);
+      }
+    } catch (error) {
+      console.error('Error fetching P&L report:', error);
+      setProfitLossData(null);
+    } finally {
+      setLoadingPL(false);
+    }
+  }, [reportDateRange]);
+
+  // Fetch Balance Sheet (wrapped in useCallback to avoid initialization error)
+  const fetchBalanceSheet = useCallback(async () => {
+    try {
+      setLoadingBalanceSheet(true);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL;
+      if (!apiBaseUrl) {
+        throw new Error('NEXT_PUBLIC_API_SERVER_URL is not defined. Please set it in your .env file.');
+      }
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const params = new URLSearchParams({
+        asOfDate: reportDateRange.endDate,
+      });
+
+      const response = await fetch(`${apiBaseUrl}/accounting/balance-sheet-data?${params}`, {
+        method: 'GET',
+        headers: headers,
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setBalanceSheetData(data);
+      } else {
+        console.error('Error fetching balance sheet:', response.statusText);
+        setBalanceSheetData(null);
+      }
+    } catch (error) {
+      console.error('Error fetching balance sheet:', error);
+      setBalanceSheetData(null);
+    } finally {
+      setLoadingBalanceSheet(false);
+    }
+  }, [reportDateRange.endDate]);
+
   // Fetch transactions
   useEffect(() => {
     if (activeTab === 'overview') {
@@ -286,14 +371,14 @@ export default function InternalAccounting() {
     if (activeTab === 'profit-loss') {
       fetchProfitLossReport();
     }
-  }, [activeTab, reportDateRange, fetchProfitLossReport]);
+  }, [activeTab, fetchProfitLossReport]);
   
   // Fetch Balance Sheet
   useEffect(() => {
     if (activeTab === 'balance-sheet') {
       fetchBalanceSheet();
     }
-  }, [activeTab, reportDateRange.endDate, fetchBalanceSheet]);
+  }, [activeTab, fetchBalanceSheet]);
   
   // Fetch Accounting Periods
   useEffect(() => {
@@ -929,90 +1014,6 @@ export default function InternalAccounting() {
     }
   };
 
-  // Fetch Profit & Loss Report
-  const fetchProfitLossReport = async () => {
-    try {
-      setLoadingPL(true);
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL;
-      if (!apiBaseUrl) {
-        throw new Error('NEXT_PUBLIC_API_SERVER_URL is not defined. Please set it in your .env file.');
-      }
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const params = new URLSearchParams({
-        startDate: reportDateRange.startDate,
-        endDate: reportDateRange.endDate,
-      });
-
-      const response = await fetch(`${apiBaseUrl}/accounting/profit-loss?${params}`, {
-        method: 'GET',
-        headers: headers,
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setProfitLossData(data);
-      } else {
-        console.error('Error fetching P&L report:', response.statusText);
-        setProfitLossData(null);
-      }
-    } catch (error) {
-      console.error('Error fetching P&L report:', error);
-      setProfitLossData(null);
-    } finally {
-      setLoadingPL(false);
-    }
-  };
-
-  // Fetch Balance Sheet
-  const fetchBalanceSheet = async () => {
-    try {
-      setLoadingBalanceSheet(true);
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL;
-      if (!apiBaseUrl) {
-        throw new Error('NEXT_PUBLIC_API_SERVER_URL is not defined. Please set it in your .env file.');
-      }
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const params = new URLSearchParams({
-        asOfDate: reportDateRange.endDate,
-      });
-
-      const response = await fetch(`${apiBaseUrl}/accounting/balance-sheet-data?${params}`, {
-        method: 'GET',
-        headers: headers,
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setBalanceSheetData(data);
-      } else {
-        console.error('Error fetching balance sheet:', response.statusText);
-        setBalanceSheetData(null);
-      }
-    } catch (error) {
-      console.error('Error fetching balance sheet:', error);
-      setBalanceSheetData(null);
-    } finally {
-      setLoadingBalanceSheet(false);
-    }
-  };
 
   // Fetch Accounting Periods
   const fetchAccountingPeriods = async () => {
@@ -1640,9 +1641,9 @@ export default function InternalAccounting() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                    group flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap relative
+                    group flex items-center gap-2 px-3 py-2 text-sm    rounded-lg transition-all duration-200 whitespace-nowrap relative
                     ${isActive
-                      ? 'tab-active-gradient text-white'
+                      ? 'tab-active-gradient text-green-600 font-bold'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200 active:scale-95'
                     }
                   `}

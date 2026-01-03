@@ -1,38 +1,29 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import ProductCard from '../product/ProductCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStartX, setTouchStartX] = useState(null);
-  const [touchEndX, setTouchEndX] = useState(null);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [windowWidth, setWindowWidth] = useState(0);
-  const swipeThreshold = 50;
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
 
-  // Determine products per page based on screen size
-  const productsPerPage = useMemo(() => {
-    if (typeof window === 'undefined') return 5; // Default for SSR
-    if (windowWidth < 640) return 2; // Mobile: 2 products (1 row)
-    if (windowWidth < 768) return 2; // Small tablet: 2 products
-    if (windowWidth < 1024) return 3; // Tablet: 3 products
-    return 5; // Desktop: 5 products
-  }, [windowWidth]);
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
 
-  // Track window width for responsive productsPerPage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setWindowWidth(window.innerWidth);
-      const handleResize = () => {
-        setWindowWidth(window.innerWidth);
-      };
+    checkScrollPosition();
+    const handleResize = () => checkScrollPosition();
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
+  }, [products]);
 
   // Helper function to get image URL
   const getImageUrl = (imagePath) => {
@@ -68,13 +59,8 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
           throw new Error(data.err || 'Error fetching products');
         }
         
-        // Filter products by categoryNameVN
-        const filteredProducts = data.products
-          .filter(product => {
-            const productCategoryVN = product.categoryNameVN || product.category || '';
-            return productCategoryVN === categoryTitle;
-          })
-          .map(product => ({
+        // Map products (API already filtered by category if categoryName provided)
+        const filteredProducts = data.products.map(product => ({
             _id: product._id,
             category: product.category,
             categoryNameVN: product.categoryNameVN || product.category || 'Unknown',
@@ -103,66 +89,17 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
     };
 
     fetchProducts();
-  }, [categoryName, categoryTitle]);
+  }, [categoryName]);
 
-  const maxIndex = useMemo(() => {
-    return Math.max(products.length - productsPerPage, 0);
-  }, [products, productsPerPage]);
-
-  const displayedProducts = useMemo(
-    () => products.slice(currentIndex, currentIndex + productsPerPage),
-    [products, currentIndex, productsPerPage]
-  );
-
-  // Reset currentIndex when productsPerPage changes to prevent out of bounds
-  useEffect(() => {
-    if (currentIndex > maxIndex) {
-      setCurrentIndex(Math.max(0, maxIndex));
-    }
-  }, [productsPerPage, maxIndex, currentIndex]);
-
-  const handlePrev = () => {
-    setCurrentIndex(prev => (prev === 0 ? maxIndex : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex(prev => (prev === maxIndex ? 0 : prev + 1));
-  };
-
-  const handleTouchStart = (e) => {
-    setTouchStartX(e.touches[0].clientX);
-    setTouchEndX(null);
-  };
-
-  const handleTouchMove = (e) => {
-    if (touchStartX !== null) {
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const deltaX = Math.abs(currentX - touchStartX);
-      const deltaY = Math.abs(currentY - e.touches[0].clientY);
-      if (deltaX > deltaY && deltaX > 10) {
-        e.preventDefault();
-      }
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const cardWidth = 320; // Width of one card + gap
+      const scrollAmount = direction === 'left' ? -cardWidth : cardWidth;
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setTimeout(checkScrollPosition, 300);
     }
   };
-
-  const handleTouchEnd = (e) => {
-    setTouchEndX(e.changedTouches[0].clientX);
-    if (touchStartX !== null && touchEndX !== null) {
-      const deltaX = touchEndX - touchStartX;
-      if (Math.abs(deltaX) > swipeThreshold) {
-        if (deltaX > 0) handlePrev();
-        else handleNext();
-      }
-    }
-    setTouchStartX(null);
-    setTouchEndX(null);
-  };
-
-  const totalSlides = products.length - productsPerPage + 1;
-  const maxDots = 10;
-  const dotsCount = Math.min(totalSlides, maxDots);
-  const step = totalSlides > maxDots ? Math.floor(totalSlides / maxDots) : 1;
 
   // Don't render if no products
   if (!isLoading && products.length === 0) {
@@ -170,40 +107,52 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{categoryTitle}</h2>
+    <section className="py-6 md:py-8 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg md:text-xl font-bold text-gray-900">{categoryTitle}</h2>
         <Link 
           href={`/san-pham?category=${encodeURIComponent(categoryTitle)}`} 
-          className="text-green-600 text-base font-medium hover:underline mt-2 hidden md:block"
+            className="text-green-600 px-4 py-2 rounded-lg text-sm font-bold hover:shadow-lg transition-all duration-300"
         >
           Xem tất cả
         </Link>
       </div>
 
-      <div
-        className="relative group"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        aria-live="polite"
+        <div className="relative group">
+          {showLeftArrow && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-[-8px] top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black text-white w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+              aria-label="Scroll left"
+            >
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          <div
+            ref={scrollContainerRef}
+            onScroll={checkScrollPosition}
+            className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {isLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Đang tải sản phẩm...</p>
+              <div className="flex items-center justify-center w-full py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+                <p className="ml-2 text-gray-600">Đang tải sản phẩm...</p>
           </div>
         ) : error ? (
-          <p className="text-center text-red-600 text-lg py-8">
+              <div className="flex items-center justify-center w-full py-8">
+                <p className="text-red-600 text-lg">
             Lỗi khi tải sản phẩm: {error}. Vui lòng thử lại sau.
           </p>
-        ) : displayedProducts.length === 0 ? (
-          null // Don't render if no products
+              </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-hidden">
-            {displayedProducts.map((product, index) => (
+              products.map((product, index) => (
+                <div key={product._id || `${categoryTitle}-${index}`} className="flex-none w-[calc(45%-4px)] sm:w-[calc(33.333%-6px)] md:w-[280px] xl:w-[230px]">
               <ProductCard
-                key={product._id || `${categoryTitle}-${index}`}
                 product={{
                   _id: product._id,
                   name: product.name,
@@ -219,51 +168,31 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
                 }}
                 view="grid"
               />
-            ))}
+                </div>
+              ))
+            )}
           </div>
-        )}
 
-        {!isLoading && products.length > productsPerPage && (
-          <>
+          {showRightArrow && !isLoading && !error && (
             <button
-              onClick={handlePrev}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handlePrev()}
-              className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              aria-label="Previous products"
+              onClick={() => scroll('right')}
+              className="absolute right-[-8px] top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black text-white w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+              aria-label="Scroll right"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
-            <button
-              onClick={handleNext}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-              className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              aria-label="Next products"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </>
-        )}
-
-        {!isLoading && products.length > productsPerPage && (
-          <div className="flex justify-center mt-4 space-x-2">
-            {Array.from({ length: dotsCount }).map((_, index) => {
-              const dotIndex = Math.min(index * step, maxIndex);
-              const isActive = currentIndex >= dotIndex && currentIndex < dotIndex + step;
-              return (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-600' : 'bg-green-300'}`}
-                  onClick={() => setCurrentIndex(dotIndex)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              );
-            })}
-          </div>
         )}
       </div>
     </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+    </section>
   );
 };
 

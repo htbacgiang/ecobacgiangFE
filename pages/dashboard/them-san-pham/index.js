@@ -776,7 +776,7 @@ export default function CreateProductPage() {
                     aria-label="Đơn vị sản phẩm"
                     aria-describedby={errors.some((e) => e.includes('Đơn vị')) ? 'error-unit' : undefined}
                   >
-                    {['Kg', 'gam', 'túi', 'chai'].map((unit) => (
+                    {['Kg', 'gam', 'túi', 'hộp','chai'].map((unit) => (
                       <option key={unit} value={unit}>
                         {unit}
                       </option>

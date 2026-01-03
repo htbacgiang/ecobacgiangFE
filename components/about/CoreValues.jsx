@@ -71,18 +71,11 @@ const CoreValues = () => {
   ];
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-green-100 overflow-hidden">
-      <div className="p-8 lg:p-12">
-        <div className="text-center mb-12">
-          <h2 className={`text-xl md:text-3xl font-bold text-gray-800 mb-4 transition-all duration-1000 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            Giá Trị <span className="text-green-600">Cốt Lõi</span>
-          </h2>
-          <div className={`w-16 h-1 bg-green-600 rounded-full mx-auto mb-6 transition-all duration-1000 delay-300 ${
-            isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-          }`}></div>
-          <p className={`text-lg text-gray-600 max-w-2xl mx-auto transition-all duration-1000 delay-500 ${
+    <div className="overflow-hidden">
+      <div className="">
+        <div className="mb-12">
+        <h2 className="text-2xl font-bold text-green-800 mb-2">3. Giá Trị Cốt Lõi</h2>
+          <p className={`text-base text-gray-600 mx-auto transition-all duration-1000 delay-500 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             Eco Bắc Giang cam kết xây dựng nền nông nghiệp thông minh, bền vững và vì tương lai xanh. 
@@ -107,10 +100,10 @@ const CoreValues = () => {
                 
                 {/* Content */}
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300">
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2 font-heading group-hover:text-green-600 transition-colors duration-300">
                     {value.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 text-base leading-relaxed">
                     {value.details[0]}
                   </p>
                 </div>

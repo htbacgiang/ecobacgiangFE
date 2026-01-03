@@ -65,7 +65,7 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
   const productRating = product.rating || 0;
   const productReviewCount = product.reviewCount || 0;
   const productDescription = product.description || "";
-  const productStockStatus = product.stockStatus || "Không xác định";
+  const productStockStatus = product.stockStatus;
   const productPromotionalPrice = product.promotionalPrice || 0;
   const productUnit = product.unit || "N/A";
 
@@ -256,8 +256,8 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
             alt={`Hình ảnh sản phẩm ${productName}`}
             className={`${
               view === "list"
-                ? "md:w-48 md:h-48 h-40 w-40 object-cover mr-4"
-                : "object-cover w-full h-64"
+                ? "md:w-40 md:h-40 h-32 w-32 object-contain mr-4"
+                : "object-contain w-full md:h-64 h-40"
             } rounded`}
             onError={(e) => {
               e.target.src = "/fallback-image.jpg";
@@ -294,24 +294,20 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
             </span>
           </div>
 
-          <div
-            className={`flex items-center mt-2 space-x-2 ${
-              view === "list" ? "" : "justify-between"
-            }`}
-          >
-            <span className="text-green-500 font-bold">
+          <div className="flex items-center mt-2">
+            <span className="text-green-600 font-bold text-lg">
               {formatCurrency(productPrice)}
+              {productUnit && productUnit !== "N/A" && (
+                <span className="text-gray-600 font-normal text-base ml-1">
+                  /{productUnit}
+                </span>
+              )}
             </span>
             {productPromotionalPrice > 0 && (
-              <span className="text-red-500 line-through">
+              <span className="text-red-500 line-through text-base ml-2">
                 {formatCurrency(productPromotionalPrice)}
               </span>
             )}
-            <span className={`ml-1 text-base justify-end ${
-              isOutOfStock ? "text-red-600" : "text-green-500"
-            }`}>
-              {productStockStatus}
-            </span>
           </div>
 
           {view === "list" && (
@@ -358,17 +354,26 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
                   </div>
                 ) : (
                   <button
-                    className={`bg-green-500 text-white md:px-2 px-2 py-2 rounded text-base flex items-center ${
+                    className={`${
                       isOutOfStock
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-green-600"
-                    }`}
-                    onClick={handleAddToCart}
+                        ? "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-green-500 text-white hover:bg-green-600"
+                    } md:px-2 px-2 py-2 rounded text-base flex items-center`}
+                    onClick={isOutOfStock ? undefined : handleAddToCart}
                     disabled={isOutOfStock}
                     title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Thêm vào giỏ hàng"}
                   >
+                    {isOutOfStock ? (
+                      <>
+                          <FaShoppingCart className="mr-2 text-red-700" />
+                          <span className="mr-2 text-red-700"> Hết hàng</span>
+                      </>
+                    ) : (
+                      <>
                     <FaShoppingCart className="mr-2" />
                     Thêm giỏ hàng
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -400,17 +405,26 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
             <div className="flex justify-center items-center mt-2 pb-3 w-full">
               {quantity === 0 ? (
                 <button
-                  onClick={handleAddToCart}
+                  onClick={isOutOfStock ? undefined : handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`bg-green-600 text-white py-2 px-3 rounded-lg text-base flex items-center ${
+                  className={`${
                     isOutOfStock 
-                      ? "opacity-50 cursor-not-allowed" 
-                      : "hover:bg-green-700"
-                  }`}
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700"
+                  } py-2 px-3 rounded-lg text-base flex items-center`}
                   title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Thêm vào giỏ hàng"}
                 >
+                  {isOutOfStock ? (
+                    <>
+                    <FaShoppingCart className="mr-2 text-red-700" />
+                      <span className="mr-2 text-red-700"> Hết hàng</span>
+                    </>
+                  ) : (
+                    <>
                   <FaShoppingCart className="mr-2" />
                   Thêm giỏ hàng
+                    </>
+                  )}
                 </button>
               ) : (
                 <div className="flex items-center border border-gray-300 rounded-lg">
@@ -455,8 +469,8 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
             borderRadius: '16px',
             padding: '32px',
             maxWidth: '900px',
-            width: '90%',
-            maxHeight: '90vh',
+            width: '100%',
+            maxHeight: '100vh',
             overflow: 'auto',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
@@ -476,17 +490,8 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
               <img
                 src={mainImage || "/fallback-image.jpg"}
                 alt={`Hình ảnh sản phẩm ${productName}`}
-                className="w-full h-80 object-cover rounded-xl shadow-lg"
+                className="w-full h-100 object-cove"
               />
-              <div className="absolute top-4 left-4">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  isOutOfStock 
-                    ? "bg-red-500 text-white" 
-                    : "bg-green-500 text-white"
-                }`}>
-                  {productStockStatus}
-                </span>
-              </div>
             </div>
             <div className="flex w-full mt-6 space-x-3 justify-center">
               {productImages.map((thumb, index) => (
@@ -535,9 +540,14 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
               <div className="flex items-baseline mb-4">
                 <span className="text-3xl font-bold text-green-600">
                   {formatCurrency(productPrice)}
+                  {productUnit && productUnit !== "N/A" && (
+                    <span className="text-gray-600 font-normal text-2xl ml-2">
+                      /{productUnit}
+                    </span>
+                  )}
                 </span>
                 {productPromotionalPrice > 0 && (
-                  <span className="text-xl text-red-500 line-through ml-4">
+                  <span className="text-2xl text-red-500 line-through ml-3">
                     {formatCurrency(productPromotionalPrice)}
                   </span>
                 )}
@@ -551,14 +561,6 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
                 <div className="flex items-center">
                   <span className="font-semibold w-20">ĐVT:</span>
                   <span className="text-gray-600">{productUnit}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-semibold w-20">Tình trạng:</span>
-                  <span className={`font-medium ${
-                    isOutOfStock ? "text-red-600" : "text-green-600"
-                  }`}>
-                    {productStockStatus}
-                  </span>
                 </div>
               </div>
             </div>
@@ -588,17 +590,26 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
                 </div>
               ) : (
                 <button
-                  onClick={handleAddToCart}
+                  onClick={isOutOfStock ? undefined : handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`bg-green-600 text-white py-3 px-8 rounded-xl flex items-center font-semibold transition-all duration-200 ${
+                  className={`${
                     isOutOfStock 
-                      ? "opacity-50 cursor-not-allowed" 
-                      : "hover:bg-green-700 hover:shadow-lg transform hover:scale-105"
-                  }`}
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700 hover:shadow-lg transform hover:scale-105"
+                  } py-3 px-8 rounded-xl flex items-center font-semibold transition-all duration-200`}
                   title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Thêm vào giỏ hàng"}
                 >
+                  {isOutOfStock ? (
+                    <>
+                          <FaShoppingCart className="mr-2 text-red-700" />
+                          <span className="mr-2 text-red-700"> Hết hàng</span>
+                    </>
+                  ) : (
+                    <>
                   <FaShoppingCart className="mr-3 text-lg" />
                   Thêm giỏ hàng
+                    </>
+                  )}
                 </button>
               )}
               

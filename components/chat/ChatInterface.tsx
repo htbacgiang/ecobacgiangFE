@@ -22,6 +22,7 @@ interface ChatInterfaceProps {
   onSendMessage: (message: string) => void;
   isConnected: boolean;
   onClearMessages: () => void;
+  userAvatar?: string;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -34,7 +35,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   error,
   onSendMessage,
   isConnected,
-  onClearMessages
+  onClearMessages,
+  userAvatar
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -75,7 +77,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
       isMinimized ? 'h-16' : 'h-[600px]'
-    } w-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col`}>
+    } w-96 chat-container bg-white/95 rounded-xl shadow-2xl border border-gray-200 flex flex-col`}>
       {/* Header */}
       <div className="chat-header text-white p-4 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -130,12 +132,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div className={`flex max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   {/* Avatar */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.isUser 
-                      ? 'bg-blue-500 ml-2' 
-                      : 'bg-green-500 mr-2'
-                  }`}>
+                    message.isUser
+                      ? 'bg-green-600 ml-2'
+                      : 'bg-green-600 mr-2'
+                  } overflow-hidden`}>
                     {message.isUser ? (
-                      <User className="w-4 h-4 text-white" />
+                      userAvatar ? (
+                        <img
+                          src={userAvatar}
+                          alt="User avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )
                     ) : (
                       <Bot className="w-4 h-4 text-white" />
                     )}
@@ -143,9 +153,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
                   {/* Message Content */}
                   <div className={`${
-                    message.isUser 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white text-gray-800 border border-gray-200'
+                    message.isUser
+                      ? 'chat-user-message text-white'
+                      : 'chat-bot-message text-gray-800'
                   } rounded-lg p-3 shadow-sm`}>
                     <p className="text-sm whitespace-pre-wrap">{message.text}</p>
                     <p className={`text-xs mt-1 ${
@@ -182,7 +192,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
@@ -208,7 +218,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Nhập câu hỏi của bạn..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="chat-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
                 disabled={isLoading}
               />
               <button

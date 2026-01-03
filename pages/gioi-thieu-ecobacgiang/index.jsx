@@ -65,49 +65,102 @@ export default function AboutSection() {
   return (
     <DefaultLayout>
       <Head>
-        <title>Eco Bắc Giang: Tương Lai Của Nông Nghiệp Bền Vững</title>
+        {/* Primary Meta Tags */}
+        <title>Giới Thiệu Eco Bắc Giang | Nông Nghiệp Hữu Cơ Bền Vững</title>
+        <meta
+          name="title"
+          content="Giới Thiệu Eco Bắc Giang | Nông Nghiệp Hữu Cơ Bền Vững"
+        />
         <meta
           name="description"
-          content="Khám phá ý nghĩa logo của Eco Bắc Giang - biểu tượng của sự kết hợp giữa nông nghiệp hữu cơ và công nghệ cao, định hướng phát triển bền vững tại Việt Nam."
+          content="Eco Bắc Giang - Tiên phong trong nông nghiệp hữu cơ và công nghệ cao tại Việt Nam. Khám phá tầm nhìn, sứ mệnh và triết lý sản xuất hữu cơ thuận tự nhiên, hướng tới mục tiêu Net Zero 2050."
         />
         <meta
           name="keywords"
-          content="Eco Bắc Giang, ý nghĩa logo Eco Bắc Giang, nông nghiệp công nghệ cao, sản xuất hữu cơ, phát triển bền vững, công nghệ thông minh"
+          content="Eco Bắc Giang, giới thiệu Eco Bắc Giang, nông nghiệp hữu cơ, nông nghiệp công nghệ cao, sản xuất hữu cơ, nông nghiệp bền vững, IoT nông nghiệp, robot nông nghiệp, Net Zero 2050, rau hữu cơ Bắc Giang, nông nghiệp thông minh Việt Nam"
         />
         <meta name="author" content="Eco Bắc Giang" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="Vietnamese" />
+        <meta name="revisit-after" content="7 days" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        {/* Canonical URL */}
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/gioi-thieu-ecobacgiang`}
+        />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/gioi-thieu-ecobacgiang`}
+        />
         <meta
           property="og:title"
-          content="Eco Bắc Giang: Tương Lai Của Nông Nghiệp Bền Vững"
+          content="Giới Thiệu Eco Bắc Giang | Nông Nghiệp Hữu Cơ Bền Vững"
         />
         <meta
           property="og:description"
-          content="Khám phá ý nghĩa logo của Eco Bắc Giang - biểu tượng của sự kết hợp giữa nông nghiệp hữu cơ và công nghệ cao, định hướng phát triển bền vững tại Việt Nam."
+          content="Eco Bắc Giang - Tiên phong trong nông nghiệp hữu cơ và công nghệ cao tại Việt Nam. Khám phá tầm nhìn, sứ mệnh và triết lý sản xuất hữu cơ thuận tự nhiên, hướng tới mục tiêu Net Zero 2050."
         />
         <meta
           property="og:image"
-          content={`${process.env.NEXT_PUBLIC_BASE_URL}/baner.webp`}
+          content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/baner.webp`}
         />
-        <meta
-          property="og:url"
-          content={`${process.env.NEXT_PUBLIC_BASE_URL}/baner.webp`}
-        />
-        <meta property="og:type" content="website" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Eco Bắc Giang - Nông nghiệp hữu cơ bền vững" />
         <meta property="og:locale" content="vi_VN" />
+        <meta property="og:site_name" content="Eco Bắc Giang" />
+        
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta
+          name="twitter:url"
+          content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/gioi-thieu-ecobacgiang`}
+        />
+        <meta
           name="twitter:title"
-          content="Ý nghĩa logo Eco Bắc Giang | Phát triển bền vững"
+          content="Giới Thiệu Eco Bắc Giang | Nông Nghiệp Hữu Cơ Bền Vững"
         />
         <meta
           name="twitter:description"
-          content="Biểu tượng Eco Bắc Giang phản ánh sự kết hợp giữa nông nghiệp hữu cơ và công nghệ cao, hướng đến mục tiêu phát triển bền vững."
+          content="Eco Bắc Giang - Tiên phong trong nông nghiệp hữu cơ và công nghệ cao tại Việt Nam. Khám phá tầm nhìn, sứ mệnh và triết lý sản xuất hữu cơ thuận tự nhiên."
         />
         <meta
           name="twitter:image"
-          content={`${process.env.NEXT_PUBLIC_BASE_URL}/baner.webp`}
+          content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/baner.webp`}
         />
+        <meta name="twitter:image:alt" content="Eco Bắc Giang - Nông nghiệp hữu cơ bền vững" />
+        
+        {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        
+        {/* Structured Data (JSON-LD) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Eco Bắc Giang",
+              "description": "Tiên phong trong nông nghiệp hữu cơ và công nghệ cao tại Việt Nam, hướng tới mục tiêu Net Zero 2050",
+              "url": `${process.env.NEXT_PUBLIC_BASE_URL || ''}/gioi-thieu-ecobacgiang`,
+              "logo": `${process.env.NEXT_PUBLIC_BASE_URL || ''}/baner.webp`,
+              "address": {
+                "@type": "PostalAddress",
+                "addressRegion": "Bắc Giang",
+                "addressCountry": "VN"
+              },
+              "sameAs": [
+                // Có thể thêm các mạng xã hội nếu có
+              ]
+            })
+          }}
+        />
       </Head>
       
       {/* Header Spacer */}
@@ -134,7 +187,7 @@ export default function AboutSection() {
 
               {/* Main Heading */}
               <div className="space-y-4">
-                <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+                <h1 className="text-2xl md:text-3xl font-bold leading-tight font-heading">
                   <span className="text-green-700">
                     Eco Bắc Giang
                   </span>
@@ -146,13 +199,13 @@ export default function AboutSection() {
               </div>
 
               {/* Description */}
-              <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
-                <p className="border-l-4 border-green-600 pl-6 bg-white/50 backdrop-blur-base rounded-r-lg py-4">
+              <div className="space-y-6 text-base text-gray-700 leading-relaxed">
+                <p className="border-l-4 border-green-600 pl-6 bg-white/50 backdrop-blur-base rounded-r-lg py-4 text-base">
                   <strong className="text-green-700 font-semibold">Khởi Nguồn Từ Một Tầm Nhìn: </strong>
                   Giữa vùng đất trù phú của Bắc Giang, Eco Bắc Giang không chỉ đơn thuần là một công ty nông nghiệp, mà còn là biểu tượng của sự đổi mới trong ngành nông nghiệp Việt Nam.
                 </p>
                 
-                <p className="bg-white/70 backdrop-blur-base rounded-lg p-6 shadow-lg">
+                <p className="bg-white/70 backdrop-blur-base rounded-lg p-6 shadow-lg text-base">
                   Với tầm nhìn rõ ràng và đầy tham vọng, <strong className="text-green-700 font-semibold">Eco Bắc Giang</strong> hướng tới trở thành người tiên phong trong lĩnh vực nông nghiệp thông minh và sản xuất hữu cơ bền vững. Được thành lập dựa trên nền tảng của tri thức hiện đại và tình yêu thiên nhiên, Eco Bắc Giang cam kết xây dựng một hệ sinh thái nông nghiệp hài hòa giữa con người và môi trường, đồng thời góp phần vào mục tiêu <strong className="text-green-700 font-semibold">Net Zero 2050</strong>.
                 </p>
               </div>

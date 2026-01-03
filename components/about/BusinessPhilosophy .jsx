@@ -33,7 +33,7 @@ const BusinessPhilosophy = () => {
 
             {/* Main Heading */}
             <div className="space-y-4">
-              <h2 className={`text-3xl md:text-4xl font-bold text-gray-800 leading-tight transition-all duration-1000 delay-300 ${
+              <h2 className={`text-2xl md:text-3xl font-bold text-gray-800 leading-tight font-heading transition-all duration-1000 delay-300 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}>
                 Định Hướng{" "}
@@ -46,7 +46,7 @@ const BusinessPhilosophy = () => {
 
             {/* Description */}
             <div className="space-y-6">
-              <p className={`text-lg text-gray-700 leading-relaxed transition-all duration-1000 delay-700 ${
+              <p className={`text-base text-gray-700 leading-relaxed transition-all duration-1000 delay-700 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}>
                 Một trong những chiến lược quan trọng của{" "}
@@ -81,7 +81,7 @@ const BusinessPhilosophy = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">{feature.title}</h3>
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2 font-heading">{feature.title}</h3>
                       <p className="text-gray-600 text-base leading-relaxed">{feature.description}</p>
                     </div>
                   </div>
@@ -105,7 +105,7 @@ const BusinessPhilosophy = () => {
               {/* Overlay Content */}
               <div className="absolute bottom-6 left-6 right-6 z-20">
                 <div className="bg-white/90 backdrop-blur-base rounded-xl p-6 shadow-lg">
-                  <h3 className="text-lg font-bold text-green-700 mb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-green-700 mb-2 font-heading">
                     Tầm Nhìn 2050
                   </h3>
                   <p className="text-gray-700 text-base">

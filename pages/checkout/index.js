@@ -15,6 +15,7 @@ import {
   increaseQuantity,
   decreaseQuantity,
   removeFromCart,
+  setQuantity,
 } from "../../store/cartSlice";
 import { AiOutlineClose } from "react-icons/ai";
 import EditAddressPopup from "../../components/fontend/common/EditAddressPopup";
@@ -204,52 +205,66 @@ export default function Cart() {
         setCoupon(appliedCoupon);
         setDiscount(reduxDiscount || 0);
       }
-    } else if (!appliedCoupon || appliedCoupon.trim() === '') {
-      // Chỉ reset nếu Redux không có coupon VÀ local có coupon/discount
-      // Không reset khi đang loading để tránh mất dữ liệu khi user đang nhập
-      if ((coupon !== '' || discount !== 0) && !loadingCoupon) {
-        console.log("🔄 Clearing coupon (no coupon in Redux)");
-        setCoupon("");
-        setDiscount(0);
-      }
     }
-  }, [session?.user?.id, appliedCoupon, reduxDiscount, loadingCoupon]);
+    // KHÔNG tự động reset coupon khi Redux không có coupon
+    // Chỉ reset khi user tự xóa qua handleRemoveCoupon
+    // Điều này đảm bảo coupon được giữ lại khi thay đổi số lượng
+  }, [session?.user?.id, appliedCoupon, reduxDiscount]);
 
   // Các hàm xử lý giỏ hàng
-  const handleIncreaseQuantity = async (item) => {
+  const handleIncreaseQuantity = async (item, step = 1) => {
+
     if (session?.user?.id) {
       try {
         // Chỉ dùng Server API
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
-        const newQuantity = (productInCart?.quantity || 0) + 1;
+        const newQuantity = (productInCart?.quantity || 0) + step;
         const cart = await cartService.update(session.user.id, item.product, newQuantity);
         
-        // Nếu có coupon, tính lại totalAfterDiscount
-        if (cart.coupon && cart.discount > 0) {
+        // Giữ lại coupon nếu đã có (từ cart hoặc local state)
+        const currentCoupon = cart.coupon || coupon;
+        const currentDiscount = cart.discount || discount;
+        
+        if (currentCoupon && currentDiscount > 0) {
           const newTotalPrice = (cart.products || []).reduce(
             (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
             0
           );
-          const newDiscountAmount = (newTotalPrice * cart.discount) / 100;
+          const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
           const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
           
-          // Cập nhật lại cart với totalAfterDiscount mới
+          // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
           const updatedCart = await cartService.applyCoupon(session.user.id, {
-            coupon: cart.coupon,
-            discount: cart.discount,
+            coupon: currentCoupon,
+            discount: currentDiscount,
             totalAfterDiscount: newTotalAfterDiscount,
           });
           dispatch(setCart(updatedCart));
+          // Đồng bộ local state với Redux
+          setCoupon(currentCoupon);
+          setDiscount(currentDiscount);
         } else {
-          dispatch(setCart(cart));
+          // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
+          const cartToDispatch = {
+            ...cart,
+            coupon: currentCoupon || cart.coupon || '',
+            discount: currentDiscount || cart.discount || 0,
+          };
+          dispatch(setCart(cartToDispatch));
+          // Giữ nguyên local state coupon nếu có
+          if (coupon && discount > 0 && !cart.coupon) {
+            setCoupon(coupon);
+            setDiscount(discount);
+          }
         }
       } catch (error) {
         console.error(error);
         toast.error("Có lỗi khi tăng số lượng.");
       }
     } else {
-      dispatch(increaseQuantity(item.product));
+      // Xử lý tăng số lượng cho người dùng chưa đăng nhập
+      dispatch(increaseQuantity({ productId: item.product, step }));
       // Nếu có coupon local, giữ nguyên discount
       if (coupon && discount > 0) {
         // Discount sẽ được tính lại tự động qua finalTotalAfterDiscount
@@ -257,43 +272,62 @@ export default function Cart() {
     }
   };
 
-  const handleDecreaseQuantity = async (item) => {
-    if (item.quantity === 1) {
+  const handleDecreaseQuantity = async (item, step = 1) => {
+
+    if (item.quantity === minQuantity) {
       setConfirmDeleteItem(item.product);
     } else {
       if (session?.user?.id) {
         try {
           // Chỉ dùng Server API
-          const currentCart = await cartService.get(session.user.id);
-          const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
-          const newQuantity = Math.max(0, (productInCart?.quantity || 0) - 1);
+        const currentCart = await cartService.get(session.user.id);
+        const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
+        const newQuantity = Math.max(0, (productInCart?.quantity || 0) - step);
           const cart = await cartService.update(session.user.id, item.product, newQuantity);
           
-          // Nếu có coupon, tính lại totalAfterDiscount
-          if (cart.coupon && cart.discount > 0) {
+          // Giữ lại coupon nếu đã có (từ cart hoặc local state)
+          const currentCoupon = cart.coupon || coupon;
+          const currentDiscount = cart.discount || discount;
+          
+          if (currentCoupon && currentDiscount > 0) {
             const newTotalPrice = (cart.products || []).reduce(
               (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
               0
             );
-            const newDiscountAmount = (newTotalPrice * cart.discount) / 100;
+            const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
             const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
             
-            // Cập nhật lại cart với totalAfterDiscount mới
+            // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
             const updatedCart = await cartService.applyCoupon(session.user.id, {
-              coupon: cart.coupon,
-              discount: cart.discount,
+              coupon: currentCoupon,
+              discount: currentDiscount,
               totalAfterDiscount: newTotalAfterDiscount,
             });
             dispatch(setCart(updatedCart));
+            // Đồng bộ local state với Redux
+            setCoupon(currentCoupon);
+            setDiscount(currentDiscount);
           } else {
-            dispatch(setCart(cart));
+            // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
+            const cartToDispatch = {
+              ...cart,
+              coupon: currentCoupon || cart.coupon || '',
+              discount: currentDiscount || cart.discount || 0,
+            };
+            dispatch(setCart(cartToDispatch));
+            // Giữ nguyên local state coupon nếu có
+            if (coupon && discount > 0 && !cart.coupon) {
+              setCoupon(coupon);
+              setDiscount(discount);
+            }
           }
         } catch (error) {
           console.error(error);
           toast.error("Có lỗi khi giảm số lượng.");
         }
       } else {
-        dispatch(decreaseQuantity(item.product));
+        // Xử lý giảm số lượng cho người dùng chưa đăng nhập
+        dispatch(decreaseQuantity({ productId: item.product, step }));
         // Nếu có coupon local, giữ nguyên discount
         if (coupon && discount > 0) {
           // Discount sẽ được tính lại tự động qua finalTotalAfterDiscount
@@ -309,24 +343,41 @@ export default function Cart() {
         await cartService.remove(session.user.id, item.product);
         const updatedCart = await cartService.get(session.user.id);
         
-        // Nếu có coupon, tính lại totalAfterDiscount
-        if (updatedCart.coupon && updatedCart.discount > 0) {
+        // Giữ lại coupon nếu đã có (từ cart hoặc local state)
+        const currentCoupon = updatedCart.coupon || coupon;
+        const currentDiscount = updatedCart.discount || discount;
+        
+        if (currentCoupon && currentDiscount > 0) {
           const newTotalPrice = (updatedCart.products || []).reduce(
             (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
             0
           );
-          const newDiscountAmount = (newTotalPrice * updatedCart.discount) / 100;
+          const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
           const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
           
-          // Cập nhật lại cart với totalAfterDiscount mới
+          // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
           const finalCart = await cartService.applyCoupon(session.user.id, {
-            coupon: updatedCart.coupon,
-            discount: updatedCart.discount,
+            coupon: currentCoupon,
+            discount: currentDiscount,
             totalAfterDiscount: newTotalAfterDiscount,
           });
           dispatch(setCart(finalCart));
+          // Đồng bộ local state với Redux
+          setCoupon(currentCoupon);
+          setDiscount(currentDiscount);
         } else {
-          dispatch(setCart(updatedCart));
+          // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
+          const cartToDispatch = {
+            ...updatedCart,
+            coupon: currentCoupon || updatedCart.coupon || '',
+            discount: currentDiscount || updatedCart.discount || 0,
+          };
+          dispatch(setCart(cartToDispatch));
+          // Giữ nguyên local state coupon nếu có
+          if (coupon && discount > 0 && !updatedCart.coupon) {
+            setCoupon(coupon);
+            setDiscount(discount);
+          }
         }
         
         toast.success(`Đã xóa "${item.title}" khỏi giỏ hàng!`);
@@ -513,8 +564,11 @@ export default function Cart() {
         // Chỉ dùng Server API
         res = await paymentService.createSepay(finalTotal, transferContent);
       } else if (paymentMethod === "MoMo") {
-        // Chỉ dùng Server API
-        res = await paymentService.createMomo(finalTotal, `Thanh toan don hang - ${Date.now()}`);
+        // MoMo đang phát triển - không cho phép tạo payment
+        toast.error("Tính năng thanh toán qua MoMo đang được phát triển. Vui lòng chọn phương thức thanh toán khác.");
+        setPaymentMethod("COD");
+        setLoadingPayment(false);
+        return;
       }
 
       if (res.success) {
@@ -869,7 +923,7 @@ export default function Cart() {
 
   // Xử lý khi thay đổi phương thức thanh toán
   useEffect(() => {
-    if (paymentMethod === "Sepay" || paymentMethod === "MoMo") {
+    if (paymentMethod === "Sepay") {
       if (session?.user?.id && cartItems.length > 0) {
         handleCreatePayment();
       } else {
@@ -898,7 +952,7 @@ export default function Cart() {
     prevFinalTotalRef.current = finalTotal;
 
     // Chỉ tạo lại payment nếu tổng tiền thực sự thay đổi và đã có paymentCode
-    if (paymentMethod === "Sepay" || paymentMethod === "MoMo") {
+    if (paymentMethod === "Sepay") {
       if (session?.user?.id && cartItems.length > 0 && finalTotal > 0) {
         if (paymentCode && !loadingPayment && prevTotal !== finalTotal && prevTotal > 0) {
           console.log("=== TOTAL CHANGED - AUTO REFRESHING QR CODE ===");
@@ -919,7 +973,7 @@ export default function Cart() {
   // Auto checkout khi thanh toán thành công
   useEffect(() => {
     const autoCheckout = async () => {
-      if (isPaid && !checkoutCompleted && !autoCheckoutLoading && (paymentMethod === "Sepay" || paymentMethod === "MoMo")) {
+      if (isPaid && !checkoutCompleted && !autoCheckoutLoading && paymentMethod === "Sepay") {
         console.log("=== AUTO CHECKOUT STARTED ===");
 
         // Kiểm tra điều kiện cơ bản
@@ -956,7 +1010,7 @@ export default function Cart() {
             finalTotal,
             shippingFee,
             paymentMethod,
-            paymentCode: paymentMethod === "Sepay" || paymentMethod === "MoMo" ? paymentCode : undefined,
+            paymentCode: paymentMethod === "Sepay" ? paymentCode : undefined,
           };
 
           console.log("Submitting auto checkout with data:", orderData);
@@ -1291,17 +1345,17 @@ export default function Cart() {
                           <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm">
                             <button
                               className={`p-2 rounded-l-lg transition-colors duration-200 ${
-                                checkoutCompleted
+                                checkoutCompleted || item.quantity <= 1
                                   ? "text-gray-400 cursor-not-allowed bg-gray-100"
                                   : "text-gray-600 hover:text-green-600 hover:bg-green-50"
                               }`}
                               onClick={() => handleDecreaseQuantity(item)}
-                              disabled={checkoutCompleted}
+                              disabled={checkoutCompleted || item.quantity <= 1}
                             >
                               <FiMinus size={16} />
                             </button>
                             <span className="px-4 py-2 font-semibold text-gray-800 min-w-[3rem] text-center">
-                              {item.quantity}
+                              {item.quantity}{item.unit && item.unit !== "N/A" ? item.unit : ""}
                             </span>
                             <button
                               className={`p-2 rounded-r-lg transition-colors duration-200 ${
@@ -1314,6 +1368,34 @@ export default function Cart() {
                             >
                               <FiPlus size={16} />
                             </button>
+                            {item.unit?.toLowerCase() === "kg" && (
+                              <div className="flex flex-col space-y-1 ml-2">
+                                <button
+                                  className={`w-8 h-6 border border-gray-300 rounded text-xs transition-colors duration-200 ${
+                                    checkoutCompleted
+                                      ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                      : "bg-white hover:bg-green-50 hover:border-green-300 text-gray-600 hover:text-green-600"
+                                  }`}
+                                  onClick={() => handleIncreaseQuantity(item, 0.5)}
+                                  disabled={checkoutCompleted}
+                                  title="Tăng 0.5kg"
+                                >
+                                  +0.5
+                                </button>
+                                <button
+                                  className={`w-8 h-6 border border-gray-300 rounded text-xs transition-colors duration-200 ${
+                                    checkoutCompleted || item.quantity <= 0.5
+                                      ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                      : "bg-white hover:bg-red-50 hover:border-red-300 text-gray-600 hover:text-red-600"
+                                  }`}
+                                  onClick={() => handleDecreaseQuantity(item, 0.5)}
+                                  disabled={checkoutCompleted || item.quantity <= 0.5}
+                                  title="Giảm 0.5kg"
+                                >
+                                  -0.5
+                                </button>
+                              </div>
+                            )}
                           </div>
                           <button
                             className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors duration-200 ${
@@ -1621,7 +1703,7 @@ export default function Cart() {
                     )}
                   </div>
                 
-                  {(paymentMethod === "Sepay" || paymentMethod === "MoMo") && (
+                  {paymentMethod === "Sepay" && (
                     paymentCode ? (
                     <div className="text-center mt-4 border-2 border-blue-200 p-6 rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-white">
 
@@ -1669,21 +1751,6 @@ export default function Cart() {
                             </div>
 
 
-                            {paymentMethod === "MoMo" && payUrl && (
-                              <div className="bg-pink-50 p-3 rounded-lg">
-                                  <p className="text-sm text-pink-700 mb-2">
-                                    Hoặc thanh toán qua app MoMo:
-                                  </p>
-                                <a
-                                  href={payUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-block bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 transition-colors"
-                                >
-                                  📱 Mở app MoMo
-                                </a>
-                              </div>
-                            )}
 
                             {!isPaid ? (
                               <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
@@ -1698,13 +1765,7 @@ export default function Cart() {
                                     <>
                                         📱 Quét mã QR bằng ứng dụng ngân hàng
                                         <br />
-                                        💳 {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? (
-                                          <>
-                                            <span className="font-semibold">Đang ở môi trường local:</span> Sau khi chuyển khoản, vui lòng click nút &quot;Đã chuyển khoản&quot; bên dưới để xác nhận thủ công
-                                          </>
-                                        ) : (
-                                          "Hệ thống sẽ tự động xác nhận khi thanh toán thành công"
-                                        )}
+                                   
                                     </>
                                   ) : (
                                     <>
@@ -1715,27 +1776,7 @@ export default function Cart() {
                                     </>
                                   )}
                                 </p>
-                                {paymentMethod === "Sepay" && (
-                                  <>
-                                    <button
-                                      onClick={handleConfirmPayment}
-                                      disabled={loadingPayment}
-                                      className="w-full mt-2 px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                      {loadingPayment ? (
-                                        <span className="flex items-center justify-center">
-                                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                          Đang xác nhận...
-                                        </span>
-                                      ) : (
-                                        "✅ Đã chuyển khoản - Xác nhận ngay"
-                                      )}
-                                    </button>
-                                    <p className="text-xs text-gray-600 mt-2 text-center bg-yellow-50 p-2 rounded border border-yellow-200">
-                                      ⚠️ <strong>Lưu ý:</strong> Nút này chỉ hoạt động sau khi hệ thống đã nhận được xác nhận từ ngân hàng (webhook). Nếu bạn đã chuyển khoản nhưng nút này không hoạt động, vui lòng đợi vài phút để hệ thống tự động xác nhận.
-                                    </p>
-                                  </>
-                                )}
+                               
                               </div>
                             ) : (
                               <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
@@ -1772,62 +1813,39 @@ export default function Cart() {
                     )
                   )}
 
-                  {/* MoMo Payment Option */}
-                  <div className={`relative border-2 rounded-xl p-4 transition-all duration-300 hover:shadow-md ${
-                    paymentMethod === "MoMo"
-                      ? "border-pink-400 bg-pink-50 shadow-lg"
-                      : "border-gray-200 bg-white hover:border-pink-300"
+                  {/* MoMo Payment Option - Đang phát triển */}
+                  <div className={`relative border-2 rounded-xl p-4 transition-all duration-300 ${
+                    "border-gray-200 bg-gray-50 opacity-60"
                   }`}>
-                    <label className="flex items-center cursor-pointer group">
+                    <label className="flex items-center cursor-not-allowed group">
                       <div className="relative mr-3">
                         <input
                           type="radio"
                           name="paymentMethod"
                           value="MoMo"
-                          checked={paymentMethod === "MoMo"}
-                          onChange={() => setPaymentMethod("MoMo")}
-                          disabled={loadingPayment || checkoutCompleted}
+                          checked={false}
+                          onChange={() => {}}
+                          disabled={true}
                           className="sr-only"
                         />
-                        <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                          paymentMethod === "MoMo"
-                            ? "border-pink-500 bg-pink-500"
-                            : loadingPayment || checkoutCompleted
-                              ? "border-gray-300 opacity-50"
-                              : "border-gray-300 group-hover:border-pink-400"
-                        }`}>
-                          {paymentMethod === "MoMo" && (
-                            <div className="w-full h-full rounded-full bg-white scale-50 transition-transform duration-200"></div>
-                          )}
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 opacity-50">
                         </div>
                       </div>
                       <div className="flex items-center flex-1">
                         <div>
-                          <span className={`text-base font-medium transition-colors duration-200 ${
-                            checkoutCompleted
-                              ? "text-gray-500"
-                              : paymentMethod === "MoMo"
-                                ? "text-pink-700"
-                                : "text-gray-700 group-hover:text-pink-600"
-                          }`}>
+                          <span className="text-base font-medium text-gray-500">
                             Thanh toán qua MoMo
                           </span>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-gray-400 mt-1">
                             QR Code + Ứng dụng MoMo
                           </p>
                         </div>
-                        <span className="ml-2 text-sm text-pink-600 bg-pink-100 px-2 py-1 rounded-full">
-                          Đa dạng
-                        </span>
+                       
                       </div>
                     </label>
-
-                    {loadingPayment && paymentMethod === "MoMo" && (
-                      <div className="mt-3 flex items-center justify-center text-pink-600 text-sm bg-pink-50 p-3 rounded-lg">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pink-500 mr-2"></div>
-                        <span>Đang tạo thanh toán...</span>
-                      </div>
-                    )}
+                    <div className="mt-2 text-xs text-gray-500 text-center italic">
+                      Tính năng đang được phát triển, sẽ sớm ra mắt
+                    </div>
                   </div>
                 </div>
               </div>

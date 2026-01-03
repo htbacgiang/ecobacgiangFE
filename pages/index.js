@@ -8,13 +8,9 @@ import SubscribeSection from "../components/about/SubscribeSection";
 import AboutUsSection from "../components/about/AboutUsSection";
 import OrganicProcess from "../components/about/OrganicProcess";
 import PostCard from "../components/common/PostCard";
-import { formatPosts } from "../lib/utils";
 import CarouselComponent from "../components/ecobacgiang/CarouselComponent";
-import FeaturedProducts from "../components/ecobacgiang/FeaturedProducts";
-import HeroSectionBlog from "../components/ecobacgiang/HeroSectionBlog";
 import VideoHero from "../components/univisport/VideoHero";
 import PromoBanner from "../components/ecobacgiang/PromoBanner";
-import BannerSale from "../components/ecobacgiang/BannerSale";
 import MonthlySales from "../components/ecobacgiang/MonthlySales";
 import CategoryProductSlider from "../components/ecobacgiang/CategoryProductSlider";
 
@@ -67,7 +63,8 @@ export default function Home({ posts, meta }) {
       <MonthlySales />
       <PromoBanner />
       <CategoryProductSlider categoryName="rau-an-la" categoryTitle="Rau ăn lá" />
-      <CategoryProductSlider categoryName="cu-qua" categoryTitle="Củ - quả" />
+      <CategoryProductSlider categoryName="cu-qua-hat" categoryTitle="Củ - quả" />
+      <CategoryProductSlider categoryName="rau-gia-vi" categoryTitle="Rau gia vị" />
       <CategoryProductSlider categoryName="thuc-pham-kho" categoryTitle="Thực phẩm khô" />
       <CategoryProductSlider categoryName="san-pham-ocop" categoryTitle="Sản phẩm OCOP" />
       <VideoHero />

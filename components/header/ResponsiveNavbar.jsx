@@ -21,7 +21,6 @@ const ResponsiveMenu = ({ isOpen, toggleMenu }) => {
         { name: "Giới thiệu", link: "/gioi-thieu-ecobacgiang" },
         { name: "Tầm nhìn, Sứ mạng", link: "/tam-nhin-su-menh" },
         { name: "Ý nghĩa Logo", link: "/y-nghia-logo-ecobacgiang" },
-        { name: "Gọi vốn cộng đồng", link: "/goi-von-cong-dong" },
         { name: "Đội ngũ", link: "/doi-ngu" },
 
       ],

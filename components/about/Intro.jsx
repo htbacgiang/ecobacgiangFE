@@ -28,7 +28,7 @@ const Intro = () => {
             <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
             Triết Lý Sản Xuất
           </div>
-          <h2 className={`text-3xl md:text-4xl font-bold text-gray-800 mb-4 transition-all duration-1000 delay-300 ${
+          <h2 className={`text-2xl md:text-3xl font-bold text-gray-800 mb-4 font-heading transition-all duration-1000 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             Sản Xuất Hữu Cơ{" "}
@@ -45,7 +45,7 @@ const Intro = () => {
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
           }`}>
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold text-green-700 mb-6 flex items-center">
+              <h3 className="text-xl md:text-2xl font-bold text-green-700 mb-6 flex items-center font-heading">
                 <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
@@ -79,7 +79,7 @@ const Intro = () => {
             <div className={`bg-white/80 backdrop-blur-base rounded-2xl p-6 shadow-lg border border-green-100 transition-all duration-1000 delay-1400 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 text-base leading-relaxed">
                 Triết lý của chúng tôi bắt nguồn từ sự tôn trọng tự nhiên.{" "}
                 <strong className="text-green-700 font-semibold">Eco Bắc Giang</strong> sản xuất các loại rau theo hướng hữu cơ với 5 nguyên tắc KHÔNG, 
                 đảm bảo sản phẩm an toàn và chất lượng cao nhất cho người tiêu dùng.
@@ -92,7 +92,7 @@ const Intro = () => {
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
           }`}>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold text-blue-700 mb-3 flex items-center">
+              <h3 className="text-xl md:text-2xl font-bold text-blue-700 mb-3 flex items-center font-heading">
                 <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                 </svg>
@@ -117,7 +117,7 @@ const Intro = () => {
                     }`}
                     style={{ transitionDelay: `${1200 + index * 200}ms` }}
                   >
-                    <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <h4 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 flex items-center font-heading">
                       <svg className="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                       </svg>

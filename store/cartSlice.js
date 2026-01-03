@@ -53,32 +53,57 @@ const cartSlice = createSlice({
     },
 
     increaseQuantity: (state, action) => {
+      const { productId, step = 1 } = action.payload;
       const index = state.cartItems.findIndex(
-        (item) => item.product === action.payload
+        (item) => item.product === productId
       );
       if (index >= 0) {
-        state.cartItems[index].quantity += 1;
-        state.cartTotal += state.cartItems[index].price;
+        state.cartItems[index].quantity += step;
+        state.cartTotal = state.cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
         state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
       }
       saveCartToLocalStorage(state);
     },
 
     decreaseQuantity: (state, action) => {
+      const { productId, step = 1 } = action.payload;
       const index = state.cartItems.findIndex(
-        (item) => item.product === action.payload
+        (item) => item.product === productId
       );
       if (index >= 0) {
-        if (state.cartItems[index].quantity > 1) {
-          state.cartItems[index].quantity -= 1;
-          state.cartTotal -= state.cartItems[index].price;
-        } else {
+        const newQuantity = state.cartItems[index].quantity - step;
+        if (newQuantity <= 0) {
           state.cartItems.splice(index, 1);
-          state.cartTotal = state.cartItems.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-          );
+        } else {
+          state.cartItems[index].quantity = newQuantity;
         }
+        state.cartTotal = state.cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
+      }
+      saveCartToLocalStorage(state);
+    },
+
+    setQuantity: (state, action) => {
+      const { productId, quantity } = action.payload;
+      const index = state.cartItems.findIndex(
+        (item) => item.product === productId
+      );
+      if (index >= 0) {
+        if (quantity <= 0) {
+          state.cartItems.splice(index, 1);
+        } else {
+          state.cartItems[index].quantity = quantity;
+        }
+        state.cartTotal = state.cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
         state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
       }
       saveCartToLocalStorage(state);
@@ -105,6 +130,7 @@ export const {
   removeFromCart,
   increaseQuantity,
   decreaseQuantity,
+  setQuantity,
   setCart,
 } = cartSlice.actions;
 export default cartSlice.reducer;

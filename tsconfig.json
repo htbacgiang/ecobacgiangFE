@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -39,9 +43,15 @@
     "lib/productUtils.js",
     "components/about/ContactSection.js",
     "pages/dashboard/khach-hang/index.tsx",
-    "pages/api/auth/[...nextauth].js", "models/Product.js", "store/index.js", "pages/dashboard/index.tsx", "pages/dashboard/dat-hang/index.jsx",
+    "pages/api/auth/[...nextauth].js",
+    "models/Product.js",
+    "store/index.js",
+    "pages/dashboard/index.tsx",
+    "pages/dashboard/dat-hang/index.jsx"
   ],
   "exclude": [
     "api.backup",
-    "**/api.backup/**","node_modules"]
+    "**/api.backup/**",
+    "node_modules"
+  ]
 }
