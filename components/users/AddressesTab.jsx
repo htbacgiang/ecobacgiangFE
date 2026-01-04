@@ -216,8 +216,8 @@ export default function AddressesTab({ userId }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-      <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+    <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 ">
+      <div className="flex flex-col  md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4 mb-6 gap-4">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-green-500 rounded-xl shadow-md">
             <MapPin className="w-6 h-6 text-white" />
@@ -228,7 +228,7 @@ export default function AddressesTab({ userId }) {
           </div>
         </div>
         <button
-          className="flex items-center px-5 py-2.5 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-all duration-200 shadow-md hover:shadow-lg"
+          className="flex items-center justify-center w-full md:w-auto px-5 py-2.5 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-all duration-200 shadow-md hover:shadow-lg"
           onClick={() => {
             resetForm();
             setShowForm(true);
@@ -249,9 +249,9 @@ export default function AddressesTab({ userId }) {
           {addresses.map((addr) => (
             <div
               key={addr._id}
-              className="border border-gray-200 p-5 rounded-xl hover:shadow-lg transition-all duration-200 bg-white hover:bg-gray-50 group"
+              className="border border-gray-200 p-3 rounded-xl hover:shadow-lg transition-all duration-200 bg-white hover:bg-gray-50 group"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-3">
                     <div className={`p-2.5 rounded-xl shadow-sm ${
@@ -266,8 +266,14 @@ export default function AddressesTab({ userId }) {
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-800">
+                      <h3 className="text-lg font-bold text-gray-800 ">
                         {addr.fullName}
+                        {addr.isDefault && (
+                      <span className="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-500 text-white mt-2.5 shadow-sm">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full mr-1.5"></div>
+                        Mặc định
+                      </span>
+                    )}
                       </h3>
                       <div className="flex items-center space-x-4 text-xs text-gray-600 mt-1.5">
                         <div className="flex items-center space-x-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
@@ -282,31 +288,26 @@ export default function AddressesTab({ userId }) {
                     </div>
                   </div>
                   
-                  <div className="ml-14">
+                  <div className="ml-1">
                     <div className="bg-gray-50 p-3 rounded-lg border-l-3 border-green-500">
                       <p className="text-gray-700 leading-relaxed text-sm font-medium">
                         {addr.address1}, {addr.wardName}, {addr.districtName}, {addr.cityName}
                       </p>
                     </div>
-                    {addr.isDefault && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500 text-white mt-2.5 shadow-sm">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full mr-1.5"></div>
-                        Mặc định
-                      </span>
-                    )}
+           
                   </div>
                 </div>
                 
-                <div className="flex flex-col space-y-2 ml-4">
+                <div className="flex flex-row md:flex-col gap-2 md:gap-2 md:ml-4 ml-0 w-full md:w-auto">
                   <button
-                    className="flex items-center px-3.5 py-2 text-blue-600 text-xs font-semibold hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300"
+                    className="flex-1 md:flex-none flex items-center justify-center px-3.5 py-2 text-blue-600 text-xs font-semibold hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300"
                     onClick={() => handleEdit(addr)}
                   >
                     <Edit size={16} className="mr-1.5" />
                     Sửa
                   </button>
                   <button
-                    className="flex items-center px-3.5 py-2 text-red-600 text-xs font-semibold hover:bg-red-50 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
+                    className="flex-1 md:flex-none flex items-center justify-center px-3.5 py-2 text-red-600 text-xs font-semibold hover:bg-red-50 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
                     onClick={() => onDeleteClick(addr._id)}
                   >
                     <Trash2 size={16} className="mr-1.5" />

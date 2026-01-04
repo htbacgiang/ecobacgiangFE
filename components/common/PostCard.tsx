@@ -99,10 +99,6 @@ const PostCard: FC<Props> = ({
             </h2>
           </Link>
 
-          {/* Description */}
-          <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
-            {trimText(meta, 120)}
-          </p>
 
           {/* Read More Link */}
           <div className="pt-2">

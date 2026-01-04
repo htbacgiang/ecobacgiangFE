@@ -1,5 +1,6 @@
 // components/PromoBanner.jsx
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function PromoBanner() {
   const [config, setConfig] = useState(null)
@@ -26,7 +27,7 @@ export default function PromoBanner() {
           description: 'Sản phẩm sạch – tươi ngon từ nông trại của chúng tôi',
           countdownLabel: 'Thời gian khuyến mãi còn lại',
           buttonText: 'Mua ngay',
-          buttonLink: '#',
+          buttonLink: '/san-pham',
           backgroundImage: '/banner.png',
           isActive: true,
         })
@@ -116,12 +117,12 @@ export default function PromoBanner() {
           </div>
 
           <div className="mt-4">
-            <a
+            <Link
               href={config.buttonLink}
               className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium rounded-full px-8 py-3 transition"
             >
               {config.buttonText}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

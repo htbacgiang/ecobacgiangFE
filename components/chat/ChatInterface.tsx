@@ -75,9 +75,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
-      isMinimized ? 'h-16' : 'h-[600px]'
-    } w-96 chat-container bg-white/95 rounded-xl shadow-2xl border border-gray-200 flex flex-col`}>
+    <div
+      className={`fixed bottom-24 right-4 md:bottom-24 md:right-6 z-[10000] transition-all duration-300 ${
+        isMinimized ? 'h-16' : 'h-[70vh] max-h-[600px]'
+      } w-[calc(100vw-2rem)] max-w-sm md:w-96 chat-container bg-white/95 rounded-xl shadow-2xl border border-gray-200 flex flex-col`}
+    >
       {/* Header */}
       <div className="chat-header text-white p-4 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center space-x-3">

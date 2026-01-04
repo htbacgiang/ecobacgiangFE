@@ -166,7 +166,7 @@ export default function ContactPage() {
     <div className="min-h-screen">
       <div className="h-[80px]"> </div>
       {/* Contact Information */}
-      <section className="py-20">
+      <section className="md:py-20 py-8 px-5">
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Contact Info */}
@@ -269,7 +269,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form */}
-      <section className="py-20 bg-white">
+      <section className="md:py-10 py-6 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div>

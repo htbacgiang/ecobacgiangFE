@@ -6,6 +6,17 @@ const saveCartToLocalStorage = (state) => {
   }
 };
 
+const normalizeCartItem = (item) => {
+  if (!item) return item;
+  const quantity = Number(item.quantity ?? 0);
+  const price = Number(item.price ?? 0);
+  return {
+    ...item,
+    price: Number.isFinite(price) ? price : 0,
+    quantity: Number.isFinite(quantity) ? quantity : 0,
+  };
+};
+
 const initialState = {
   cartItems: [],
   cartTotal: 0,
@@ -113,7 +124,9 @@ const cartSlice = createSlice({
       if (!Array.isArray(action.payload.products)) {
         console.warn("Dữ liệu products không hợp lệ:", action.payload.products);
       }
-      state.cartItems = Array.isArray(action.payload.products) ? action.payload.products : [];
+      state.cartItems = Array.isArray(action.payload.products)
+        ? action.payload.products.map(normalizeCartItem)
+        : [];
       state.cartTotal = action.payload.cartTotal || 0;
       state.coupon = action.payload.coupon || "";
       state.discount = action.payload.discount || 0;

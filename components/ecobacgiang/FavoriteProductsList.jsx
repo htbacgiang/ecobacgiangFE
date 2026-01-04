@@ -225,7 +225,7 @@ const FavoriteProductsList = () => {
   return (
     <>
       {/* Thống kê */}
-      <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-200">
+      <div className="bg-white rounded-xl mb-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3 bg-green-50 px-4 py-3 rounded-lg border border-green-100">
             <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center text-white text-lg">
@@ -237,15 +237,7 @@ const FavoriteProductsList = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 bg-blue-50 px-4 py-3 rounded-lg border border-blue-100">
-            <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white text-lg">
-              <FiShoppingBag />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">{cartItems.length}</h3>
-              <p className="text-xs text-gray-600">Sản phẩm trong giỏ hàng</p>
-            </div>
-          </div>
+      
         </div>
       </div>
 
@@ -265,15 +257,15 @@ const FavoriteProductsList = () => {
           return (
             <div
               key={product._id}
-              className="flex items-center p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
+              className="flex items-start md:items-center p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
             >
               {/* Số thứ tự */}
-              <div className="w-8 h-8 rounded-lg bg-green-500 text-white flex items-center justify-center font-semibold text-sm mr-4 flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-green-500 text-white flex items-center justify-center font-semibold text-sm mr-4 flex-shrink-0 self-center md:self-auto">
                 {index + 1}
               </div>
               
               {/* Hình ảnh */}
-              <div className="w-16 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0 border border-gray-200">
+              <div className="md:w-16 w-24 md:h-16 h-24 rounded-lg overflow-hidden mr-4 flex-shrink-0 border border-gray-200">
                 <img
                   src={getImageUrl(getProductImage(product))}
                   alt={product.name || 'Sản phẩm'}
@@ -297,10 +289,69 @@ const FavoriteProductsList = () => {
                 <div className="text-lg font-bold text-green-600">
                   {formatCurrency(product.price)}
                 </div>
+
+                {/* Mobile: các nút thao tác xuống dòng dưới giá */}
+                <div className="mt-3 flex items-center gap-2 flex-wrap md:hidden">
+                  {isInCart ? (
+                    <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200 gap-1.5">
+                      <button
+                        onClick={() => handleDecreaseQuantity(product._id)}
+                        className="w-7 h-7 bg-white rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex items-center justify-center text-sm"
+                        aria-label="Giảm số lượng"
+                      >
+                        <FiMinus />
+                      </button>
+                      <span className="min-w-[28px] text-center font-semibold text-gray-900 text-sm">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => handleIncreaseQuantity(product._id, product)}
+                        disabled={isOutOfStock}
+                        className={`w-7 h-7 bg-white rounded-md transition-colors flex items-center justify-center text-sm ${
+                          isOutOfStock
+                            ? "text-gray-300 cursor-not-allowed opacity-50"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                        aria-label={isOutOfStock ? "Sản phẩm đang hết hàng" : "Tăng số lượng"}
+                        title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Tăng số lượng"}
+                      >
+                        <FiPlus />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      disabled={isOutOfStock}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                        isOutOfStock
+                          ? "bg-red-100 text-red-600 cursor-not-allowed"
+                          : "bg-green-500 text-white hover:bg-green-600"
+                      }`}
+                      aria-label={
+                        isOutOfStock
+                          ? "Sản phẩm đang hết hàng"
+                          : `Thêm ${product.name} vào giỏ hàng`
+                      }
+                      title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Thêm vào giỏ hàng"}
+                    >
+                      <FaShoppingCart />
+                      Thêm
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleRemoveFavorite(product._id)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    aria-label={`Xóa ${product.name} khỏi danh sách yêu thích`}
+                  >
+                    <FiTrash2 />
+                    Xóa
+                  </button>
+                </div>
               </div>
-              
-              {/* Các nút thao tác */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+
+              {/* Desktop: giữ như cũ (nút nằm bên phải) */}
+              <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                 {isInCart ? (
                   <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200 gap-1.5">
                     <button
@@ -318,8 +369,8 @@ const FavoriteProductsList = () => {
                       disabled={isOutOfStock}
                       className={`w-7 h-7 bg-white rounded-md transition-colors flex items-center justify-center text-sm ${
                         isOutOfStock
-                          ? 'text-gray-300 cursor-not-allowed opacity-50'
-                          : 'text-gray-600 hover:bg-gray-100'
+                          ? "text-gray-300 cursor-not-allowed opacity-50"
+                          : "text-gray-600 hover:bg-gray-100"
                       }`}
                       aria-label={isOutOfStock ? "Sản phẩm đang hết hàng" : "Tăng số lượng"}
                       title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Tăng số lượng"}
@@ -333,8 +384,8 @@ const FavoriteProductsList = () => {
                     disabled={isOutOfStock}
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                       isOutOfStock
-                        ? 'bg-red-100 text-red-600 cursor-not-allowed'
-                        : 'bg-green-500 text-white hover:bg-green-600'
+                        ? "bg-red-100 text-red-600 cursor-not-allowed"
+                        : "bg-green-500 text-white hover:bg-green-600"
                     }`}
                     aria-label={isOutOfStock ? "Sản phẩm đang hết hàng" : `Thêm ${product.name} vào giỏ hàng`}
                     title={isOutOfStock ? "Sản phẩm đang hết hàng" : "Thêm vào giỏ hàng"}
@@ -343,7 +394,7 @@ const FavoriteProductsList = () => {
                     Thêm
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => handleRemoveFavorite(product._id)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"

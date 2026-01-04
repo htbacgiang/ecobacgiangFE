@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import Navbar from "../../components/header/Navbar";
+import DefaultLayout2 from "../../components/layout/DefaultLayout2";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import axios from "axios";
@@ -15,7 +16,6 @@ import {
   increaseQuantity,
   decreaseQuantity,
   removeFromCart,
-  setQuantity,
 } from "../../store/cartSlice";
 import { AiOutlineClose } from "react-icons/ai";
 import EditAddressPopup from "../../components/fontend/common/EditAddressPopup";
@@ -62,6 +62,18 @@ export default function Cart() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const isKgUnit = (unit) =>
+    (unit || "").toString().trim().toLowerCase() === "kg";
+
+  const normalizeQuantity = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    // avoid floating errors; for kg, snap to 0.5 steps
+    if (isKgUnit(unit)) return Math.round(n * 2) / 2;
+    // for non-kg, keep integer quantities
+    return Math.round(n);
+  };
 
 
 
@@ -219,7 +231,11 @@ export default function Cart() {
         // Chỉ dùng Server API
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
-        const newQuantity = (productInCart?.quantity || 0) + step;
+        const currentQty = Number(productInCart?.quantity ?? 0);
+        // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
+        const effectiveStep =
+          isKgUnit(item.unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
+        const newQuantity = normalizeQuantity(currentQty + effectiveStep, item.unit);
         const cart = await cartService.update(session.user.id, item.product, newQuantity);
         
         // Giữ lại coupon nếu đã có (từ cart hoặc local state)
@@ -264,7 +280,10 @@ export default function Cart() {
       }
     } else {
       // Xử lý tăng số lượng cho người dùng chưa đăng nhập
-      dispatch(increaseQuantity({ productId: item.product, step }));
+      const currentQty = Number(item.quantity ?? 0);
+      const effectiveStep =
+        isKgUnit(item.unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
+      dispatch(increaseQuantity({ productId: item.product, step: effectiveStep }));
       // Nếu có coupon local, giữ nguyên discount
       if (coupon && discount > 0) {
         // Discount sẽ được tính lại tự động qua finalTotalAfterDiscount
@@ -274,7 +293,10 @@ export default function Cart() {
 
   const handleDecreaseQuantity = async (item, step = 1) => {
 
-    if (item.quantity === minQuantity) {
+    const minQuantity = isKgUnit(item.unit) ? 0.5 : 1;
+
+    // If UI ever allows decreasing at min, ask to delete
+    if (Number(item.quantity) === minQuantity) {
       setConfirmDeleteItem(item.product);
     } else {
       if (session?.user?.id) {
@@ -282,7 +304,11 @@ export default function Cart() {
           // Chỉ dùng Server API
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
-        const newQuantity = Math.max(0, (productInCart?.quantity || 0) - step);
+        const currentQty = Number(productInCart?.quantity ?? 0);
+        const newQuantity = Math.max(
+          0,
+          normalizeQuantity(currentQty - step, item.unit)
+        );
           const cart = await cartService.update(session.user.id, item.product, newQuantity);
           
           // Giữ lại coupon nếu đã có (từ cart hoặc local state)
@@ -1231,16 +1257,14 @@ export default function Cart() {
     }).format(amount);
 
   return (
-    <>
-      <Navbar />
+    <DefaultLayout2>
       <Head>
         <title>Giỏ hàng</title>
         <meta name="description" content="Giỏ hàng của bạn tại Eco Bắc Giang" />
       </Head>
       <div className="h-[80px] bg-white"></div>
-      <div className="p-4 bg-gray-100 min-h-screen">
+      <div className="p-4 min-h-screen ">
         <Toaster />
-
         {/* Modal xác nhận xóa sản phẩm */}
         {confirmDeleteItem && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[9999]">
@@ -1272,8 +1296,7 @@ export default function Cart() {
             <div className="bg-white p-4 rounded-lg shadow-lg text-center w-80">
               <p className="mb-4">
                 Bạn có chắc chắn?
-
- muốn xóa địa chỉ này không?
+              muốn xóa địa chỉ này không?
               </p>
               <div className="flex justify-center gap-4">
                 <button
@@ -1294,11 +1317,11 @@ export default function Cart() {
         )}
 
         {/* Layout 2 cột */}
-        <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-0 md:p-3 pb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Cột trái: Sản phẩm */}
           <div className="md:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-100 p-6">
-              <div className="flex items-center mb-6">
+            <div className="bg-white rounded-xl border border-gray-100 p-3">
+              <div className="flex items-center mb-3">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
                   <span className="text-green-600 text-xl">🛒</span>
                 </div>
@@ -1309,13 +1332,13 @@ export default function Cart() {
               </div>
 
               {cartItems.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {cartItems.map((item) => (
                     <div
                       className="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:shadow-md transition-shadow duration-200"
                       key={item.product}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-start md:items-center">
                         <div className="w-20 h-20 flex-shrink-0 relative bg-white rounded-lg overflow-hidden shadow-sm">
                           <Image
                             src={item.image}
@@ -1326,23 +1349,106 @@ export default function Cart() {
                           />
                         </div>
                         <div className="ml-4 flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-800 text-lg mb-1 truncate">
+                          <h3 className="font-semibold text-gray-800 text-lg mb-1 break-words md:truncate">
                             {item.title}
                           </h3>
-                          {item.unit && (
-                            <p className="text-gray-500 text-sm mb-2">
-                              Đơn vị tính:{" "}
-                              <span className="font-medium text-gray-700">
+                          <div className="text-green-600 font-bold text-lg">
+                            {formatCurrency(item.price)}/ {" "}<span className="font-medium text-gray-700">
                                 {item.unit}
                               </span>
-                            </p>
-                          )}
-                          <div className="text-green-600 font-bold text-lg">
-                            {formatCurrency(item.price)}
+                          </div>
+
+                          {/* Mobile: tên ở trên, tăng/giảm ở dưới */}
+                          <div className="mt-1 flex items-center justify-between gap-2 md:hidden">
+                            <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm">
+                              {/* Chỉ cho phép trừ 0.5kg khi đang là 1kg */}
+                              {item.unit?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
+                                <button
+                                  className={`ml-2 w-8 h-8 border border-gray-300 rounded text-xs transition-colors duration-200 ${
+                                    checkoutCompleted || item.quantity <= 0.5
+                                      ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                      : "bg-white hover:bg-red-50 hover:border-red-300 text-gray-600 hover:text-red-600"
+                                  }`}
+                                  onClick={() => handleDecreaseQuantity(item, 0.5)}
+                                  disabled={checkoutCompleted || item.quantity <= 0.5}
+                                  title="Giảm 0.5kg"
+                                >
+                                  -0.5
+                                </button>
+                              )}
+                              <button
+                                className={`p-2 rounded-l-lg transition-colors duration-200 ${
+                                  checkoutCompleted || item.quantity <= 1
+                                    ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                    : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                                }`}
+                                onClick={() => handleDecreaseQuantity(item)}
+                                disabled={checkoutCompleted || item.quantity <= 1}
+                              >
+                                <FiMinus size={16} />
+                              </button>
+                              <span className="px-4 py-2 font-semibold text-gray-800  text-center">
+                                {item.quantity}
+                              </span>
+                          
+                              <button
+                                className={`p-2 rounded-r-lg transition-colors duration-200 ${
+                                  checkoutCompleted
+                                    ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                    : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                                }`}
+                                onClick={() => handleIncreaseQuantity(item)}
+                                disabled={checkoutCompleted}
+                              >
+                                <FiPlus size={16} />
+                              </button>
+                            </div>
+
+                            <button
+                              className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors duration-200 ${
+                                checkoutCompleted
+                                  ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                  : "text-red-500 hover:text-red-700 hover:bg-red-50"
+                              }`}
+                              onClick={() => handleRemoveItem(item)}
+                              disabled={checkoutCompleted}
+                            >
+                              <span className="flex items-center">
+                                <svg
+                                  className="w-4 h-4 mr-1"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </span>
+                            </button>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end space-y-3">
+                        {/* Desktop: giữ nguyên layout cũ */}
+                        <div className="hidden md:flex flex-col items-end space-y-3">
                           <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm">
+                            {/* Chỉ cho phép trừ 0.5kg khi đang là 1kg */}
+                            {item.unit?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
+                              <button
+                                className={`ml-2 w-8 h-8 border border-gray-300 rounded text-xs transition-colors duration-200 ${
+                                  checkoutCompleted || item.quantity <= 0.5
+                                    ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                                    : "bg-white hover:bg-red-50 hover:border-red-300 text-gray-600 hover:text-red-600"
+                                }`}
+                                onClick={() => handleDecreaseQuantity(item, 0.5)}
+                                disabled={checkoutCompleted || item.quantity <= 0.5}
+                                title="Giảm 0.5kg"
+                              >
+                                -0.5
+                              </button>
+                            )}
                             <button
                               className={`p-2 rounded-l-lg transition-colors duration-200 ${
                                 checkoutCompleted || item.quantity <= 1
@@ -1368,34 +1474,6 @@ export default function Cart() {
                             >
                               <FiPlus size={16} />
                             </button>
-                            {item.unit?.toLowerCase() === "kg" && (
-                              <div className="flex flex-col space-y-1 ml-2">
-                                <button
-                                  className={`w-8 h-6 border border-gray-300 rounded text-xs transition-colors duration-200 ${
-                                    checkoutCompleted
-                                      ? "text-gray-400 cursor-not-allowed bg-gray-100"
-                                      : "bg-white hover:bg-green-50 hover:border-green-300 text-gray-600 hover:text-green-600"
-                                  }`}
-                                  onClick={() => handleIncreaseQuantity(item, 0.5)}
-                                  disabled={checkoutCompleted}
-                                  title="Tăng 0.5kg"
-                                >
-                                  +0.5
-                                </button>
-                                <button
-                                  className={`w-8 h-6 border border-gray-300 rounded text-xs transition-colors duration-200 ${
-                                    checkoutCompleted || item.quantity <= 0.5
-                                      ? "text-gray-400 cursor-not-allowed bg-gray-100"
-                                      : "bg-white hover:bg-red-50 hover:border-red-300 text-gray-600 hover:text-red-600"
-                                  }`}
-                                  onClick={() => handleDecreaseQuantity(item, 0.5)}
-                                  disabled={checkoutCompleted || item.quantity <= 0.5}
-                                  title="Giảm 0.5kg"
-                                >
-                                  -0.5
-                                </button>
-                              </div>
-                            )}
                           </div>
                           <button
                             className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors duration-200 ${
@@ -1459,21 +1537,21 @@ export default function Cart() {
                 {session ? (
                   addresses.length > 0 ? (
                     selectedAddress ? (
-                      <div className="border rounded-md p-2 flex items-start justify-between">
+                      <div className="border rounded-md p-3 flex items-start justify-between">
                         <div>
-                          <p className="font-semibold text-sm">
+                          <p className="font-semibold text-base md:text-sm">
                             {selectedAddress.fullName || name}
                           </p>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-gray-600 text-base md:text-sm">
                             SĐT:{" "}
                             {selectedAddress.phoneNumber
                               ? `(+84) ${selectedAddress.phoneNumber}`
                               : phone}
                           </p>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-gray-600 text-base md:text-sm">
                             Địa chỉ: {selectedAddress.address1}
                           </p>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-gray-600 text-base md:text-sm">
                             {selectedAddress.wardName},{" "}
                             {selectedAddress.districtName},{" "}
                             {selectedAddress.cityName}
@@ -2084,6 +2162,6 @@ export default function Cart() {
           });
         }}
       />
-    </>
+    </DefaultLayout2>
   );
 }

@@ -116,7 +116,7 @@ export default function ChangePassword() {
           }}
         >
           {({ values, handleChange, errors, touched, isSubmitting }) => (
-            <Form className="space-y-6">
+            <Form className="space-y-3">
               {/* Current Password */}
               <div className="relative">
                 <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">

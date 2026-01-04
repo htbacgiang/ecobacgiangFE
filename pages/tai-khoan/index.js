@@ -345,7 +345,7 @@ export default function UserProfile() {
     switch (selectedTab) {
       case "account":
                  return (
-           <div className="p-4 md:p-6">
+           <div className="p-0 md:px-3 md:py-6">
              <div className="md:hidden mb-3">
                <h2 className="text-xl font-bold text-gray-900 mb-1">Thông tin tài khoản</h2>
                <p className="text-gray-600 text-sm">Cập nhật thông tin cá nhân của bạn</p>
@@ -693,60 +693,41 @@ export default function UserProfile() {
             <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-white rounded-full -translate-x-8 -translate-y-8"></div>
           </div>
 
-          <div className="relative p-6">
+          <div className="relative pt-6 px-6">
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => window.location.href = '/'}
                 className="p-3 rounded-2xl bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-sm shadow-lg"
               >
-                <Home size={20} />
+                <Home size={20} className="text-green-600" />
               </button>
-              <h1 className="text-xl font-bold">Tài khoản</h1>
+              <h1 className="text-xl font-bold text-black">Tài khoản</h1>
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="p-3 rounded-2xl bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-sm shadow-lg"
               >
-                <Settings size={20} />
+                <Settings size={20} className="text-green-600" />
               </button>
             </div>
 
-            {/* User Info Card */}
-            <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 shadow-xl">
-              <div className="flex items-center">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 flex items-center justify-center ring-4 ring-white/30 shadow-lg">
-                    {image ? (
-                      <img
-                        src={image}
-                        alt="User Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold">
-                        {name ? name.charAt(0).toUpperCase() : "U"}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="ml-4 flex-1">
-                  <p className="font-bold text-lg text-white">{name || "Người dùng"}</p>
-                  <p className="text-sm text-white/90">{email || "user@example.com"}</p>
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
 
         {/* Mobile Menu */}
         {showMobileMenu && (
           <div className="bg-white border-b border-gray-200 shadow-2xl">
-            <AccountSettingsList handleTabClick={handleTabClick} onSignOut={handleSignOut} />
+            <AccountSettingsList
+              selectedTab={selectedTab}
+              handleTabClick={handleTabClick}
+              onSignOut={handleSignOut}
+            />
           </div>
         )}
 
         {/* Content Area */}
         <div className="pb-24 px-4">
-          <div className="mt-6">
+          <div className="mt-2">
             {renderContent()}
           </div>
         </div>
@@ -756,7 +737,7 @@ export default function UserProfile() {
       <div className="hidden md:block min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto p-8">
           <div className="bg-white shadow-2xl rounded-3xl overflow-hidden">
-            <div className="flex">
+            <div className="flex ">
               <div className="w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100">
                 <UserSidebar
                   selectedTab={selectedTab}

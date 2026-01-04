@@ -17,7 +17,7 @@ const ChatButton: React.FC<ChatButtonProps> = ({
   return (
     <button
       onClick={onToggle}
-      className={`fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 ${
+      className={`fixed bottom-20 md:bottom-6 right-6 z-[10000] w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 ${
         isOpen 
           ? 'bg-red-500 hover:bg-red-600' 
           : 'bg-green-500 hover:bg-green-600'

@@ -47,10 +47,11 @@ const ChatWidget: React.FC = () => {
   }, [isOpen]);
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setIsMinimized(false);
-    }
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) setIsMinimized(false);
+      return next;
+    });
   };
 
   const handleMinimize = () => {

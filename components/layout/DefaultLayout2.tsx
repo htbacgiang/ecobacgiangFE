@@ -1,30 +1,32 @@
 import { FC, ReactNode } from 'react';
-import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import Footer from '../common/Footer';
 import Navbar from '../header/Navbar';
 import NavbarMobile from './NavbarMobile';
 
 const GoogleAnalytics = dynamic(() => import('../common/GoogleAnalytics'), { ssr: false });
+const ChatWidget = dynamic(() => import('../chat/ChatWidget'), { ssr: false });
 
 interface Props {
   title?: string;
   desc?: string;
   thumbnail?: string;
+  meta?: any;
   children: ReactNode;
 }
 
-const DefaultLayout: FC<Props> = ({ title, desc, thumbnail, children }): JSX.Element => {
+const DefaultLayout2: FC<Props> = ({ title, desc, thumbnail, meta, children }): JSX.Element => {
   return (
     <>
-      <div className="min-h-screen bg-gray-50 text-gray-900 transition">
-        <div className='hidden md:block'>
+      <div className="min-h-screen bg-primary dark:bg-primary-dark transition">
         <Navbar />
-        </div>
+        <GoogleAnalytics />
         <div className="mx-auto max-w-full">{children}</div>
         <NavbarMobile />
+        <ChatWidget />
       </div>
     </>
   );
 };
 
-export default DefaultLayout;
+export default DefaultLayout2;

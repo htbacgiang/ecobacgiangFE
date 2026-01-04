@@ -9,7 +9,6 @@ import {
   decreaseQuantity,
   removeFromCart,
   setCart,
-  setQuantity,
 } from "../../../store/cartSlice";
 import { useSession } from "next-auth/react";
 import axios from "axios";
@@ -86,14 +85,27 @@ const ShoppingCart = ({ toggleCart }) => {
   }, [session?.user?.id, appliedCoupon, loadingCoupon]);
 
   // Các hàm xử lý tăng/giảm/xóa sản phẩm
-  const handleIncrease = async (productId, step = 1) => {
+  const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
+
+  const normalizeQuantity = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    if (isKgUnit(unit)) return Math.round(n * 2) / 2;
+    return Math.round(n);
+  };
+
+  const handleIncrease = async (productId, step = 1, unit = "") => {
     if (session?.user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../../lib/api-services");
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
-        const newQuantity = (productInCart?.quantity || 0) + step;
+        const currentQty = Number(productInCart?.quantity ?? 0);
+        // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
+        const effectiveStep =
+          isKgUnit(unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
+        const newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
         const cart = await cartService.update(session.user.id, productId, newQuantity);
         dispatch(setCart(cart));
       } catch (error) {
@@ -102,19 +114,23 @@ const ShoppingCart = ({ toggleCart }) => {
       }
     } else {
       // Xử lý tăng số lượng cho người dùng chưa đăng nhập
-      dispatch(increaseQuantity({ productId, step }));
+      const currentItem = cartItems.find((i) => i.product === productId);
+      const currentQty = Number(currentItem?.quantity ?? 0);
+      const effectiveStep =
+        isKgUnit(unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
+      dispatch(increaseQuantity({ productId, step: effectiveStep }));
     }
   };
 
-  const handleDecrease = async (productId, step = 1) => {
+  const handleDecrease = async (productId, step = 1, unit = "") => {
     if (session?.user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../../lib/api-services");
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
-        const currentQuantity = productInCart?.quantity || 0;
-        const newQuantity = Math.max(0, currentQuantity - step);
+        const currentQuantity = Number(productInCart?.quantity ?? 0);
+        const newQuantity = Math.max(0, normalizeQuantity(currentQuantity - step, unit));
 
         if (newQuantity === 0) {
           await cartService.remove(session.user.id, productId);
@@ -367,9 +383,20 @@ const ShoppingCart = ({ toggleCart }) => {
                       
                       {/* Điều khiển số lượng với thiết kế đẹp */}
                       <div className="flex items-center space-x-2">
+                        {/* Chỉ cho phép trừ 0.5kg khi đang là 1kg */}
+                        {item.unit?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
+                          <button
+                            className="w-10 h-8 border border-gray-300 rounded-lg bg-white hover:bg-red-50 hover:border-red-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-300 disabled:hover:text-gray-400 text-xs font-semibold"
+                            onClick={() => handleDecrease(item.product, 0.5, item.unit)}
+                            disabled={item.quantity <= 0.5}
+                            title="Giảm 0.5kg"
+                          >
+                            -0.5
+                          </button>
+                        )}
                         <button
                           className="w-8 h-8 border border-gray-300 rounded-lg bg-white hover:bg-green-50 hover:border-green-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-300 disabled:hover:text-gray-400"
-                          onClick={() => handleDecrease(item.product)}
+                          onClick={() => handleDecrease(item.product, 1, item.unit)}
                           disabled={item.quantity <= 1}
                           title="Giảm số lượng"
                         >
@@ -378,31 +405,13 @@ const ShoppingCart = ({ toggleCart }) => {
                         <span className="w-12 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-semibold text-gray-700">
                           {item.quantity}{item.unit && item.unit !== "N/A" ? item.unit : ""}
                         </span>
+                    
                         <button
                           className="w-8 h-8 border border-gray-300 rounded-lg bg-white hover:bg-green-50 hover:border-green-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-green-600"
-                          onClick={() => handleIncrease(item.product)}
+                          onClick={() => handleIncrease(item.product, 1, item.unit)}
                         >
                           <AiOutlinePlus size={14} />
                         </button>
-                        {item.unit?.toLowerCase() === "kg" && (
-                          <div className="flex flex-col space-y-1 ml-1">
-                            <button
-                              className="w-6 h-6 border border-gray-300 rounded text-xs bg-white hover:bg-green-50 hover:border-green-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-green-600"
-                              onClick={() => handleIncrease(item.product, 0.5)}
-                              title="Tăng 0.5kg"
-                            >
-                              +0.5
-                            </button>
-                            <button
-                              className="w-6 h-6 border border-gray-300 rounded text-xs bg-white hover:bg-red-50 hover:border-red-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-300 disabled:hover:text-gray-400"
-                              onClick={() => handleDecrease(item.product, 0.5)}
-                              disabled={item.quantity <= 0.5}
-                              title="Giảm 0.5kg"
-                            >
-                              -0.5
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

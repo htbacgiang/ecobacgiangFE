@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { AiOutlineClose, AiOutlineDown, AiOutlineUp } from "react-icons/ai";
@@ -7,6 +8,12 @@ import { IoCartOutline } from "react-icons/io5";
 import logo from "../../public/logoecobacgiang.png";
 
 const ResponsiveMenu = ({ isOpen, toggleMenu }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const toggleDropdown = (index) => {
@@ -34,11 +41,11 @@ const ResponsiveMenu = ({ isOpen, toggleMenu }) => {
     { name: "Liên hệ", link: "/lien-he" },
   ];
 
-  return (
+  const menuContent = (
     <>
       {/* Enhanced Overlay */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-all duration-500 ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] transition-all duration-500 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={toggleMenu}
@@ -46,7 +53,7 @@ const ResponsiveMenu = ({ isOpen, toggleMenu }) => {
 
       {/* Enhanced Sidebar Menu */}
       <div
-        className={`fixed top-0 left-0 w-[70%] max-w-sm h-full bg-white shadow-2xl z-50 transform ${
+        className={`fixed top-0 left-0 w-[70%] max-w-sm h-full bg-white shadow-2xl z-[99999] transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } transition-all duration-500 ease-in-out overflow-hidden`}
       >
@@ -175,6 +182,10 @@ const ResponsiveMenu = ({ isOpen, toggleMenu }) => {
       </div>
     </>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(menuContent, document.body);
 };
 
 export default ResponsiveMenu;

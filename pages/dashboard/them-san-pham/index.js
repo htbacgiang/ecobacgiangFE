@@ -87,7 +87,7 @@ function reducer(state, action) {
 const categories = [
   { categoryNameVN: 'Rau ăn lá', category: 'rau-an-la' },
   { categoryNameVN: 'Củ, quả, hạt', category: 'cu-qua-hat' },
-  { categoryNameVN: 'Đồ khô sấy lạng', category: 'do-kho-say-lanh' },
+  { categoryNameVN: 'Đồ khô', category: 'thuc-pham-kho' },
   { categoryNameVN: 'Rau gia vị', category: 'rau-gia-vi' },
   { categoryNameVN: 'Sản phẩm OCOP', category: 'san-pham-ocop' },
 
