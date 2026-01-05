@@ -16,6 +16,7 @@ import { addToCart, increaseQuantity, decreaseQuantity, setCart } from '../../st
 import axios from 'axios';
 import parse from 'html-react-parser';
 import ProductSlider from '../../components/ecobacgiang/ProductSlider';
+import { normalizeUnit } from '../../utils/normalizeUnit';
 
 // Environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_SERVER_URL || process.env.NEXT_PUBLIC_API_URL;
@@ -103,6 +104,18 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
   
   // Check if product is out of stock
   const isOutOfStock = product?.stockStatus === 'Hết hàng';
+  const unitValue = normalizeUnit(product?.unit) || product?.unit || "";
+  const unitDisplay = unitValue;
+
+  // Đồng bộ logic đơn vị 0.5kg giống Cart
+  const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
+  const is100gUnit = (unit) => (normalizeUnit(unit) || unit) === "100g";
+  const normalizeQuantity = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    if (isKgUnit(unit)) return Math.round(n * 2) / 2;
+    return Math.round(n);
+  };
 
   const updateSwipers = useCallback((index) => {
     if (index === activeIndex) return;
@@ -162,6 +175,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
           image: product.image[0],
           price: product.price,
           quantity: 1,
+          unit: unitValue,
         });
         dispatch(setCart(cart));
         console.log("Add to cart (API Server) success:", cart);
@@ -176,6 +190,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
           image: product.image[0],
           price: product.price,
           quantity: 1,
+          unit: unitValue,
         })
       );
     }
@@ -193,7 +208,11 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
         const { cartService } = await import("../../lib/api-services");
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
-        const newQuantity = (productInCart?.quantity || 0) + 1;
+        const currentQty = Number(productInCart?.quantity ?? 0);
+        // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
+        const effectiveStep = isKgUnit(unitValue) && currentQty === 0.5 ? 0.5 : 1;
+        let newQuantity = normalizeQuantity(currentQty + effectiveStep, unitValue);
+        if (is100gUnit(unitValue)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
         const cart = await cartService.update(session.user.id, product._id, newQuantity);
         dispatch(setCart(cart));
         console.log("Increase quantity (API Server) success:", cart);
@@ -201,18 +220,21 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
         console.error(error);
       }
     } else {
-      dispatch(increaseQuantity(product._id));
+      const currentQty = Number(cartItem?.quantity ?? 0);
+      const effectiveStep = isKgUnit(unitValue) && currentQty === 0.5 ? 0.5 : 1;
+      dispatch(increaseQuantity({ productId: product._id, step: effectiveStep }));
     }
   };
 
   // Handle Decrease Quantity
-  const handleDecreaseQuantity = async () => {
+  const handleDecreaseQuantity = async (step = 1) => {
     if (session && session.user) {
       try {
         const { cartService } = await import("../../lib/api-services");
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
-        const newQuantity = Math.max(0, (productInCart?.quantity || 0) - 1);
+        const currentQty = Number(productInCart?.quantity ?? 0);
+        const newQuantity = Math.max(0, normalizeQuantity(currentQty - step, unitValue));
         if (newQuantity === 0) {
           const cart = await cartService.remove(session.user.id, product._id);
           dispatch(setCart(cart));
@@ -225,7 +247,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
         console.error(error);
       }
     } else {
-      dispatch(decreaseQuantity(product._id));
+      dispatch(decreaseQuantity({ productId: product._id, step }));
     }
   };
 
@@ -263,7 +285,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
     <DefaultLayout>
       <div className="container mx-auto py-6 px-4 md:px-0">
         <Breadcrumb product={product} />
-        <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto">
           {/* Image Section */}
           <div className="w-full md:w-2/5">
             {images.length === 0 ? (
@@ -471,7 +493,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
                  
                  <div className="flex justify-between py-3 border-b border-gray-100">
                    <span className="text-gray-600">Đơn vị:</span>
-                   <span className="font-medium">{product.unit || 'Không xác định'}</span>
+                   <span className="font-medium">{unitDisplay || 'Không xác định'}</span>
                  </div>
                  
                  <div className="flex justify-between py-3 border-b border-gray-100">
@@ -508,9 +530,19 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
                   </button>
                 ) : (
                   <div className="flex-1 flex items-center justify-center border border-gray-300 rounded-lg">
+                    {isKgUnit(unitValue) && Number(quantity) === 1 && (
+                      <button
+                        className="p-2 text-gray-600 hover:text-black text-sm font-semibold"
+                        onClick={() => handleDecreaseQuantity(0.5)}
+                        aria-label="Giảm 0.5kg"
+                        title="Giảm 0.5kg"
+                      >
+                        -0.5
+                      </button>
+                    )}
                     <button
                       className="p-2 text-gray-600 hover:text-black"
-                      onClick={handleDecreaseQuantity}
+                      onClick={() => handleDecreaseQuantity(1)}
                       aria-label="Giảm số lượng"
                     >
                       <FiMinus />
@@ -533,20 +565,20 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
                 )}
                 
                 <a
-                  href="tel:0834204999"
+                  href="tel:0866572271"
                   className="flex-1 text-center bg-red-500 text-white py-3 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium"
-                  aria-label="Gọi hotline 0834.204.999"
+                  aria-label="Gọi hotline 0866572271"
                 >
-                  Hotline: 0834.204.999
+                  Hotline: 0866572.271
                 </a>
               </div>
             </div>
 
             {/* Features Section - Chiều cao bằng thumbnail */}
-            <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-200 h-32 flex flex-col">
+            <div className="mt-4 bg-white rounded-xl p-3 shadow-sm border border-gray-200 h-32 flex flex-col">
               <h3 className="text-lg font-bold text-gray-800 mb-3">Đặc điểm nổi bật</h3>
               
-              <div className="grid grid-cols-2 gap-3 flex-1">
+              <div className="grid grid-cols-2 gap-1 flex-1">
                 <div className="flex items-start gap-2">
                   <Leaf className="w-5 h-5 text-green-600 mt-0.5" />
                   <span className="text-sm text-gray-600">Hữu cơ 100%</span>
@@ -678,7 +710,7 @@ export async function getServerSideProps({ params }) {
       rating: p.rating || 0,
       reviewCount: p.reviewCount || 0,
       stockStatus: p.stockStatus || 'Còn hàng',
-      unit: p.unit || '',
+      unit: normalizeUnit(p.unit) || '',
       category: p.category || '',
       categoryNameVN: p.categoryNameVN || '',
       description: p.description || '',

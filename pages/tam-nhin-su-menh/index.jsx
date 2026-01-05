@@ -40,8 +40,8 @@ const VisionMissionCoreValues = () => {
       </Head>
     <div className="h-[80px]"></div>
       <div className="mx-auto p-4 md:max-w-7xl">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-green-800 mb-2">
+        <div className="text-center mt-6">
+          <h1 className="md:text-2xl text-xl font-bold text-green-800 mb-2">
             Tầm Nhìn - Sứ Mệnh - Giá Trị Cốt Lõi
           </h1>
           <p className="text-gray-600">
@@ -54,7 +54,7 @@ const VisionMissionCoreValues = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-green-800 mb-2">2. Sứ Mệnh</h2>
+          <h2 className="md:text-2xl text-xl font-bold text-green-800 mb-2">2. Sứ Mệnh</h2>
           <p className="text-gray-600 mb-6 ">
             Chúng tôi cam kết thực hiện những sứ mệnh quan trọng để xây dựng tương lai nông nghiệp bền vững
           </p>

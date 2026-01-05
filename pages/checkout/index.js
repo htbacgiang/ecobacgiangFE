@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { userService, cartService, checkoutService, paymentService, couponService } from "../../lib/api-services";
+import { normalizeUnit } from "../../utils/normalizeUnit";
 import {
   setCart,
   increaseQuantity,
@@ -66,6 +67,15 @@ export default function Cart() {
   const isKgUnit = (unit) =>
     (unit || "").toString().trim().toLowerCase() === "kg";
 
+  const is100gUnit = (unit) => (normalizeUnit(unit) || unit) === "100g";
+
+  const displayQty = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return "0";
+    if (is100gUnit(unit)) return String(Math.round(n) * 100);
+    return String(n);
+  };
+
   const normalizeQuantity = (qty, unit) => {
     const n = Number(qty ?? 0);
     if (!Number.isFinite(n)) return 0;
@@ -112,7 +122,7 @@ export default function Cart() {
     : (totalAfterDiscount || totalPrice);
   
   const finalTotalAfterDiscount = calculatedTotalAfterDiscount;
-  const shippingFee = 0; // Tạm bỏ phí vận chuyển
+  const shippingFee = 30000; // Tạm bỏ phí vận chuyển
   const finalTotal = finalTotalAfterDiscount + shippingFee;
 
   // Thông tin chuyển khoản
@@ -235,7 +245,8 @@ export default function Cart() {
         // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
         const effectiveStep =
           isKgUnit(item.unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
-        const newQuantity = normalizeQuantity(currentQty + effectiveStep, item.unit);
+        let newQuantity = normalizeQuantity(currentQty + effectiveStep, item.unit);
+        if (is100gUnit(item.unit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
         const cart = await cartService.update(session.user.id, item.product, newQuantity);
         
         // Giữ lại coupon nếu đã có (từ cart hoặc local state)
@@ -1354,7 +1365,7 @@ export default function Cart() {
                           </h3>
                           <div className="text-green-600 font-bold text-lg">
                             {formatCurrency(item.price)}/ {" "}<span className="font-medium text-gray-700">
-                                {item.unit}
+                                {normalizeUnit(item.unit) || item.unit}
                               </span>
                           </div>
 
@@ -1362,7 +1373,7 @@ export default function Cart() {
                           <div className="mt-1 flex items-center justify-between gap-2 md:hidden">
                             <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm">
                               {/* Chỉ cho phép trừ 0.5kg khi đang là 1kg */}
-                              {item.unit?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
+                              {(normalizeUnit(item.unit) || item.unit)?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
                                 <button
                                   className={`ml-2 w-8 h-8 border border-gray-300 rounded text-xs transition-colors duration-200 ${
                                     checkoutCompleted || item.quantity <= 0.5
@@ -1388,17 +1399,17 @@ export default function Cart() {
                                 <FiMinus size={16} />
                               </button>
                               <span className="px-4 py-2 font-semibold text-gray-800  text-center">
-                                {item.quantity}
+                                {displayQty(item.quantity, item.unit)}
                               </span>
                           
                               <button
                                 className={`p-2 rounded-r-lg transition-colors duration-200 ${
-                                  checkoutCompleted
+                                  checkoutCompleted || (is100gUnit(item.unit) && Number(item.quantity) >= 9)
                                     ? "text-gray-400 cursor-not-allowed bg-gray-100"
                                     : "text-gray-600 hover:text-green-600 hover:bg-green-50"
                                 }`}
                                 onClick={() => handleIncreaseQuantity(item)}
-                                disabled={checkoutCompleted}
+                                disabled={checkoutCompleted || (is100gUnit(item.unit) && Number(item.quantity) >= 9)}
                               >
                                 <FiPlus size={16} />
                               </button>
@@ -1435,7 +1446,7 @@ export default function Cart() {
                         <div className="hidden md:flex flex-col items-end space-y-3">
                           <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm">
                             {/* Chỉ cho phép trừ 0.5kg khi đang là 1kg */}
-                            {item.unit?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
+                            {(normalizeUnit(item.unit) || item.unit)?.toLowerCase() === "kg" && Number(item.quantity) === 1 && (
                               <button
                                 className={`ml-2 w-8 h-8 border border-gray-300 rounded text-xs transition-colors duration-200 ${
                                   checkoutCompleted || item.quantity <= 0.5
@@ -1461,16 +1472,16 @@ export default function Cart() {
                               <FiMinus size={16} />
                             </button>
                             <span className="px-4 py-2 font-semibold text-gray-800 min-w-[3rem] text-center">
-                              {item.quantity}{item.unit && item.unit !== "N/A" ? item.unit : ""}
+                              {displayQty(item.quantity, item.unit)}{is100gUnit(item.unit) ? "g" : ((normalizeUnit(item.unit) || item.unit) && (normalizeUnit(item.unit) || item.unit) !== "N/A" ? (normalizeUnit(item.unit) || item.unit) : "")}
                             </span>
                             <button
                               className={`p-2 rounded-r-lg transition-colors duration-200 ${
-                                checkoutCompleted
+                                checkoutCompleted || (is100gUnit(item.unit) && Number(item.quantity) >= 9)
                                   ? "text-gray-400 cursor-not-allowed bg-gray-100"
                                   : "text-gray-600 hover:text-green-600 hover:bg-green-50"
                               }`}
                               onClick={() => handleIncreaseQuantity(item)}
-                              disabled={checkoutCompleted}
+                              disabled={checkoutCompleted || (is100gUnit(item.unit) && Number(item.quantity) >= 9)}
                             >
                               <FiPlus size={16} />
                             </button>

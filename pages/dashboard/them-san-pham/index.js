@@ -6,6 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Editor from '../../../components/univisport/Editor';
 import { debounce } from 'lodash';
+import { normalizeUnit } from '../../../utils/normalizeUnit';
 
 // Vietnamese to ASCII for slug generation
 const vietnameseToAscii = (str) => {
@@ -144,7 +145,9 @@ export default function CreateProductPage() {
           rating: product.rating || 0,
           reviewCount: product.reviewCount || 0,
           stockStatus: product.stockStatus || 'Còn hàng',
-          unit: (product.unit && ['Kg', 'gam', 'túi', 'chai'].includes(product.unit)) ? product.unit : 'Kg', // Ensure valid unit
+          unit: (normalizeUnit(product.unit) && ['Kg', '100g', 'túi', 'hộp', 'chai'].includes(normalizeUnit(product.unit)))
+            ? normalizeUnit(product.unit)
+            : 'Kg', // Ensure valid unit
         },
       });
 
@@ -399,7 +402,7 @@ export default function CreateProductPage() {
       }
       
       // Validate unit - ensure it exists and is valid
-      const validUnits = ['Kg', 'gam', 'túi', 'chai'];
+      const validUnits = ['Kg', '100g', 'túi', 'hộp', 'chai'];
       // Normalize unit: trim and check if valid, default to 'Kg'
       let unitValue = (formData.unit || '').toString().trim();
       if (!unitValue || !validUnits.includes(unitValue)) {
@@ -408,9 +411,13 @@ export default function CreateProductPage() {
         if (unitLower === 'kg' || unitLower === 'kilogram' || unitLower === 'kí') {
           unitValue = 'Kg';
         } else if (unitLower === 'g' || unitLower === 'gram' || unitLower === 'gam') {
-          unitValue = 'gam';
+          unitValue = '100g';
+        } else if (unitLower === '100g' || unitLower === '100 g' || unitLower === '100gram' || unitLower === '100 gram') {
+          unitValue = '100g';
         } else if (unitLower === 'tui' || unitLower === 'túi' || unitLower === 'bag') {
           unitValue = 'túi';
+        } else if (unitLower === 'hop' || unitLower === 'hộp' || unitLower === 'box') {
+          unitValue = 'hộp';
         } else if (unitLower === 'chai' || unitLower === 'bottle') {
           unitValue = 'chai';
         } else {
@@ -421,7 +428,7 @@ export default function CreateProductPage() {
       
       // Final check - if still not valid, show error
       if (!validUnits.includes(unitValue)) {
-        addError('Đơn vị phải là Kg, gam, túi hoặc chai');
+        addError('Đơn vị phải là Kg, 100g, túi, hộp hoặc chai');
         setIsSubmitting(false);
         return;
       }
@@ -776,7 +783,7 @@ export default function CreateProductPage() {
                     aria-label="Đơn vị sản phẩm"
                     aria-describedby={errors.some((e) => e.includes('Đơn vị')) ? 'error-unit' : undefined}
                   >
-                    {['Kg', 'gam', 'túi', 'hộp','chai'].map((unit) => (
+                    {['Kg', '100g', 'túi', 'hộp', 'chai'].map((unit) => (
                       <option key={unit} value={unit}>
                         {unit}
                       </option>

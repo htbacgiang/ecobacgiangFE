@@ -1,10 +1,10 @@
 import FavoriteProductsList from "../../components/ecobacgiang/FavoriteProductsList";
-import DefaultLayout from "../../components/layout/DefaultLayout";
+import DefaultLayout2 from "../../components/layout/DefaultLayout2";
 import Head from "next/head";
 
 export default function FavoritesPage() {
   return (
-    <DefaultLayout>
+    <DefaultLayout2>
       <Head>
         <title>Danh Sách Sản Phẩm Yêu Thích | Eco Bắc Giang</title>
         <meta
@@ -38,6 +38,6 @@ export default function FavoritesPage() {
           <FavoriteProductsList />
         </div>
       </div>
-    </DefaultLayout>
+    </DefaultLayout2>
   );
 }

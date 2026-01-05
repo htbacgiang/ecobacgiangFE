@@ -13,9 +13,9 @@ const VisionComponent = () => {
 
   return (
     <div className=" overflow-hidden">
-      <div className="p-8 lg:p-12">
+      <div className="mt-6">
         <div className=" mb-12">
-        <h2 className="text-2xl font-bold text-green-800 mb-2">1. Tầm Nhìn</h2>
+        <h2 className="md:text-2xl text-xl font-bold text-green-800 mb-2">1. Tầm Nhìn</h2>
           <p className={`text-base text-gray-600 m mx-auto transition-all duration-1000 delay-500 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>

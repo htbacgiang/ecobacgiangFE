@@ -73,8 +73,8 @@ const CoreValues = () => {
   return (
     <div className="overflow-hidden">
       <div className="">
-        <div className="mb-12">
-        <h2 className="text-2xl font-bold text-green-800 mb-2">3. Giá Trị Cốt Lõi</h2>
+        <div className="mb-6">
+        <h2 className="md:text-2xl text-xl font-bold text-green-800 mb-2">3. Giá Trị Cốt Lõi</h2>
           <p className={`text-base text-gray-600 mx-auto transition-all duration-1000 delay-500 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
@@ -93,11 +93,6 @@ const CoreValues = () => {
               style={{ transitionDelay: `${800 + index * 100}ms` }}
             >
               <div className="flex items-start space-x-4">
-                {/* Number Badge */}
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-white font-bold text-lg">{value.number}</span>
-                </div>
-                
                 {/* Content */}
                 <div className="flex-1">
                   <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2 font-heading group-hover:text-green-600 transition-colors duration-300">

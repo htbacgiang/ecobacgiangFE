@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { normalizeUnit } from "../utils/normalizeUnit";
 
 const saveCartToLocalStorage = (state) => {
   if (typeof window !== "undefined") {
@@ -16,6 +17,8 @@ const normalizeCartItem = (item) => {
     quantity: Number.isFinite(quantity) ? quantity : 0,
   };
 };
+
+const is100gUnit = (unit) => normalizeUnit(unit) === "100g";
 
 const initialState = {
   cartItems: [],
@@ -39,9 +42,13 @@ const cartSlice = createSlice({
         (item) => item.product === product
       );
       if (existingIndex >= 0) {
-        state.cartItems[existingIndex].quantity += quantity;
+        const nextQty = state.cartItems[existingIndex].quantity + quantity;
+        state.cartItems[existingIndex].quantity = is100gUnit(state.cartItems[existingIndex].unit)
+          ? Math.min(9, nextQty) // 1..9 (=> 100..900g)
+          : nextQty;
       } else {
-        state.cartItems.push({ product, price, quantity, title, image, unit });
+        const safeQty = is100gUnit(unit) ? Math.min(9, Math.max(1, quantity)) : quantity;
+        state.cartItems.push({ product, price, quantity: safeQty, title, image, unit });
       }
       state.cartTotal = state.cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
@@ -69,7 +76,10 @@ const cartSlice = createSlice({
         (item) => item.product === productId
       );
       if (index >= 0) {
-        state.cartItems[index].quantity += step;
+        const nextQty = state.cartItems[index].quantity + step;
+        state.cartItems[index].quantity = is100gUnit(state.cartItems[index].unit)
+          ? Math.min(9, nextQty)
+          : nextQty;
         state.cartTotal = state.cartItems.reduce(
           (sum, item) => sum + item.price * item.quantity,
           0

@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
+import { normalizeUnit } from "../../../utils/normalizeUnit";
 
 const ShoppingCart = ({ toggleCart }) => {
   // Thêm keyboard support để đóng cart bằng ESC
@@ -86,6 +87,14 @@ const ShoppingCart = ({ toggleCart }) => {
 
   // Các hàm xử lý tăng/giảm/xóa sản phẩm
   const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
+  const is100gUnit = (unit) => (normalizeUnit(unit) || unit) === "100g";
+
+  const displayQty = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return "0";
+    if (is100gUnit(unit)) return String(Math.round(n) * 100);
+    return String(n);
+  };
 
   const normalizeQuantity = (qty, unit) => {
     const n = Number(qty ?? 0);
@@ -105,7 +114,8 @@ const ShoppingCart = ({ toggleCart }) => {
         // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
         const effectiveStep =
           isKgUnit(unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
-        const newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
+        let newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
+        if (is100gUnit(unit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
         const cart = await cartService.update(session.user.id, productId, newQuantity);
         dispatch(setCart(cart));
       } catch (error) {
@@ -369,7 +379,7 @@ const ShoppingCart = ({ toggleCart }) => {
                       />
                       {/* Badge số lượng */}
                       <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {item.quantity}
+                        {displayQty(item.quantity, item.unit)}{is100gUnit(item.unit) ? "g" : ""}
                       </div>
                     </div>
                     
@@ -403,12 +413,14 @@ const ShoppingCart = ({ toggleCart }) => {
                           <AiOutlineMinus size={14} />
                         </button>
                         <span className="w-12 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-semibold text-gray-700">
-                          {item.quantity}{item.unit && item.unit !== "N/A" ? item.unit : ""}
+                          {displayQty(item.quantity, item.unit)}{is100gUnit(item.unit) ? "g" : (item.unit && item.unit !== "N/A" ? item.unit : "")}
                         </span>
                     
                         <button
                           className="w-8 h-8 border border-gray-300 rounded-lg bg-white hover:bg-green-50 hover:border-green-300 transition-all duration-200 flex items-center justify-center text-gray-600 hover:text-green-600"
                           onClick={() => handleIncrease(item.product, 1, item.unit)}
+                          disabled={is100gUnit(item.unit) && Number(item.quantity) >= 9}
+                          title={is100gUnit(item.unit) && Number(item.quantity) >= 9 ? "Tối đa 900g" : "Tăng số lượng"}
                         >
                           <AiOutlinePlus size={14} />
                         </button>
