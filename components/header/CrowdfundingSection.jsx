@@ -2,7 +2,7 @@
 
 export default function CrowdfundingSection() {
   return (
-    <div className="w-full py-6 bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="w-full py-6 bg-gradient-to-br from-green-50 to-blue-50 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white border-2 border-green-200 rounded-2xl p-6 shadow-lg relative overflow-hidden">
           {/* Background decoration */}

@@ -234,7 +234,9 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
         const currentQty = Number(productInCart?.quantity ?? 0);
-        const newQuantity = Math.max(0, normalizeQuantity(currentQty - step, unitValue));
+        // Logic giảm xuống 0.5kg khi đang là 1kg
+        const effectiveStep = isKgUnit(unitValue) && currentQty === 1 && step === 1 ? 0.5 : step;
+        const newQuantity = Math.max(0, normalizeQuantity(currentQty - effectiveStep, unitValue));
         if (newQuantity === 0) {
           const cart = await cartService.remove(session.user.id, product._id);
           dispatch(setCart(cart));

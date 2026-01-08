@@ -70,6 +70,18 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
   const productPromotionalPrice = product.promotionalPrice || 0;
   const productUnit = normalizeUnit(product.unit) || "N/A";
 
+  const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
+  const is100gUnit = (unit) => (normalizeUnit(unit) || unit) === "100g";
+
+  const normalizeQuantity = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    // avoid floating errors; for kg, snap to 0.5 steps
+    if (isKgUnit(unit)) return Math.round(n * 2) / 2;
+    // for non-kg, keep integer quantities
+    return Math.round(n);
+  };
+
   // Modal image handling
   const handleThumbnailClick = (thumb) => {
     setMainImage(thumb);
@@ -180,7 +192,11 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
           const { cartService } = await import("../../lib/api-services");
           const currentCart = await cartService.get(session.user.id);
           const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
-          const newQuantity = (productInCart?.quantity || 0) + 1;
+          const currentQty = Number(productInCart?.quantity ?? 0);
+          const effectiveStep =
+            isKgUnit(productUnit) && currentQty === 0.5 ? 0.5 : 1;
+          let newQuantity = normalizeQuantity(currentQty + effectiveStep, productUnit);
+          if (is100gUnit(productUnit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
           const cart = await cartService.update(session.user.id, product._id, newQuantity);
           dispatch(setCart(cart));
         } catch (apiError) {
@@ -192,7 +208,10 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
           dispatch(setCart(res.data));
         }
       } else {
-        dispatch(increaseQuantity(product._id));
+        const currentQty = Number(quantity ?? 0);
+        const effectiveStep =
+          isKgUnit(productUnit) && currentQty === 0.5 ? 0.5 : 1;
+        dispatch(increaseQuantity({ productId: product._id, step: effectiveStep }));
       }
     } catch (error) {
       toast.error("Không thể tăng số lượng");
@@ -208,7 +227,11 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
           const { cartService } = await import("../../lib/api-services");
           const currentCart = await cartService.get(session.user.id);
           const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
-          const newQuantity = Math.max(0, (productInCart?.quantity || 0) - 1);
+          const currentQty = Number(productInCart?.quantity ?? 0);
+          const effectiveStep =
+            isKgUnit(productUnit) && currentQty === 1 ? 0.5 : 1;
+          let newQuantity = Math.max(0, normalizeQuantity(currentQty - effectiveStep, productUnit));
+          if (is100gUnit(productUnit)) newQuantity = Math.min(9, Math.max(0, Math.round(newQuantity)));
           if (newQuantity === 0) {
             const cart = await cartService.remove(session.user.id, product._id);
             dispatch(setCart(cart));
@@ -225,7 +248,7 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
           dispatch(setCart(res.data));
         }
       } else {
-        dispatch(decreaseQuantity(product._id));
+        dispatch(decreaseQuantity({ productId: product._id, step: 1 }));
       }
     } catch (error) {
       toast.error("Không thể giảm số lượng");

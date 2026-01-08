@@ -80,6 +80,27 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Disable body scroll when CrowdFunding modal is open
+  useEffect(() => {
+    if (isCrowdFundingOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore scroll position
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isCrowdFundingOpen]);
+
   // Toggle functions
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleCart = () => setCartOpen(!cartOpen);
@@ -503,25 +524,41 @@ const Navbar = () => {
       {/* Crowd Funding Popup */}
       {isCrowdFundingOpen && (
         <div
-          className="fixed top-0 left-0 w-full h-full bg-black/50 backdrop-blur-sm z-[10000] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] overflow-y-auto"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000
+          }}
           onClick={() => setIsCrowdFundingOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-label="Crowd Funding Form"
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 animate-slide-up border border-gray-200"
+            className="min-h-full flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-end items-center border-b border-gray-100 p-4">
-              <AiOutlineClose
-                className="cursor-pointer bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 p-2 rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-110"
-                size={30}
-                onClick={() => setIsCrowdFundingOpen(false)}
-                aria-label="Close Crowd Funding form"
-              />
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 my-8 flex flex-col border border-gray-200"
+              style={{ maxHeight: '90vh' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-end items-center border-b border-gray-100 p-4 flex-shrink-0">
+                <AiOutlineClose
+                  className="cursor-pointer bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 p-2 rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-110"
+                  size={30}
+                  onClick={() => setIsCrowdFundingOpen(false)}
+                  aria-label="Close Crowd Funding form"
+                />
+              </div>
+              <div className="overflow-y-auto flex-1" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+                <CrowdfundingSection />
+              </div>
             </div>
-            <CrowdfundingSection />
           </div>
         </div>
       )}

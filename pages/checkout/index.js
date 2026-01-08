@@ -254,23 +254,14 @@ export default function Cart() {
         const currentDiscount = cart.discount || discount;
         
         if (currentCoupon && currentDiscount > 0) {
-          const newTotalPrice = (cart.products || []).reduce(
-            (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
-            0
-          );
-          const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
-          const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
-          
-          // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
+          // Cập nhật lại cart với coupon hiện tại; backend sẽ tự tính totalAfterDiscount
           const updatedCart = await cartService.applyCoupon(session.user.id, {
             coupon: currentCoupon,
-            discount: currentDiscount,
-            totalAfterDiscount: newTotalAfterDiscount,
           });
           dispatch(setCart(updatedCart));
           // Đồng bộ local state với Redux
           setCoupon(currentCoupon);
-          setDiscount(currentDiscount);
+          setDiscount(updatedCart.discount || currentDiscount);
         } else {
           // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
           const cartToDispatch = {
@@ -316,9 +307,11 @@ export default function Cart() {
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === item.product);
         const currentQty = Number(productInCart?.quantity ?? 0);
+        // Logic giảm xuống 0.5kg khi đang là 1kg
+        const effectiveStep = isKgUnit(item.unit) && currentQty === 1 && step === 1 ? 0.5 : step;
         const newQuantity = Math.max(
           0,
-          normalizeQuantity(currentQty - step, item.unit)
+          normalizeQuantity(currentQty - effectiveStep, item.unit)
         );
           const cart = await cartService.update(session.user.id, item.product, newQuantity);
           
@@ -327,23 +320,14 @@ export default function Cart() {
           const currentDiscount = cart.discount || discount;
           
           if (currentCoupon && currentDiscount > 0) {
-            const newTotalPrice = (cart.products || []).reduce(
-              (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
-              0
-            );
-            const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
-            const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
-            
-            // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
+            // Cập nhật lại cart với coupon hiện tại; backend sẽ tự tính totalAfterDiscount
             const updatedCart = await cartService.applyCoupon(session.user.id, {
               coupon: currentCoupon,
-              discount: currentDiscount,
-              totalAfterDiscount: newTotalAfterDiscount,
             });
             dispatch(setCart(updatedCart));
             // Đồng bộ local state với Redux
             setCoupon(currentCoupon);
-            setDiscount(currentDiscount);
+            setDiscount(updatedCart.discount || currentDiscount);
           } else {
             // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
             const cartToDispatch = {
@@ -385,23 +369,14 @@ export default function Cart() {
         const currentDiscount = updatedCart.discount || discount;
         
         if (currentCoupon && currentDiscount > 0) {
-          const newTotalPrice = (updatedCart.products || []).reduce(
-            (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
-            0
-          );
-          const newDiscountAmount = (newTotalPrice * currentDiscount) / 100;
-          const newTotalAfterDiscount = newTotalPrice - newDiscountAmount;
-          
-          // Cập nhật lại cart với totalAfterDiscount mới và giữ coupon
+          // Cập nhật lại cart với coupon hiện tại; backend sẽ tự tính totalAfterDiscount
           const finalCart = await cartService.applyCoupon(session.user.id, {
             coupon: currentCoupon,
-            discount: currentDiscount,
-            totalAfterDiscount: newTotalAfterDiscount,
           });
           dispatch(setCart(finalCart));
           // Đồng bộ local state với Redux
           setCoupon(currentCoupon);
-          setDiscount(currentDiscount);
+          setDiscount(finalCart.discount || currentDiscount);
         } else {
           // Nếu không có coupon, vẫn giữ coupon trong local state nếu có
           const cartToDispatch = {
@@ -446,107 +421,70 @@ export default function Cart() {
       return;
     }
     try {
-      // Chỉ dùng Server API
-      const couponResponse = await couponService.validate(coupon.toUpperCase());
-      console.log("Coupon Response:", couponResponse);
-      
-      // Xử lý response format
-      let couponData = null;
-      if (Array.isArray(couponResponse)) {
-        couponData = couponResponse.length > 0 ? couponResponse[0] : null;
-      } else if (couponResponse && typeof couponResponse === 'object') {
-        // Có thể là { coupon: {...} } hoặc object trực tiếp
-        couponData = couponResponse.coupon || couponResponse;
-      }
-      
-      if (!couponData || !couponData.discount) {
-        setDiscount(0);
-        setErrorMessage("Mã giảm giá không hợp lệ.");
-        setLoadingCoupon(false);
-        return;
-      }
-      const currentDate = new Date();
-      const start = new Date(couponData.startDate);
-      const end = new Date(couponData.endDate);
-      if (currentDate < start || currentDate > end) {
-        setDiscount(0);
-        setErrorMessage("Mã giảm giá đã hết hạn hoặc chưa có hiệu lực.");
-        setLoadingCoupon(false);
-        return;
-      }
-      const discountValue = couponData.discount;
-      
-      // Tính lại totalPrice để đảm bảo tính toán chính xác
-      const currentTotalPrice = cartItems.reduce(
-        (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
-        0
-      );
-      
-      const discountAmt = (currentTotalPrice * discountValue) / 100;
-      const newTotalAfterDiscount = currentTotalPrice - discountAmt;
-      
-      console.log("💰 Applying coupon:", {
-        coupon: coupon.toUpperCase(),
-        discountValue,
-        currentTotalPrice,
-        discountAmt,
-        newTotalAfterDiscount
-      });
-      
-      // Chỉ dùng Server API
+      // Chỉ dùng Server API - backend sẽ validate (date + limit/per-user) và tự tính discount/totalAfterDiscount
+      const code = coupon.toUpperCase();
       const cart = await cartService.applyCoupon(session.user.id, {
-        coupon: coupon.toUpperCase(),
-        discount: discountValue,
-        totalAfterDiscount: newTotalAfterDiscount,
+        coupon: code,
       });
+
+      // apiClient có thể trả về warning object cho 400/404 (không throw).
+      // Tránh overwrite cart về 0 trong trường hợp coupon không hợp lệ/hết lượt.
+      if (cart && cart._isWarning) {
+        setDiscount(0);
+        setErrorMessage(cart.message || cart.error || "Không thể áp dụng mã giảm giá.");
+        return;
+      }
+      // Safety: if backend didn't actually apply the code, don't show "0%" with the code
+      if (!cart?.coupon || cart.coupon.toUpperCase() !== code || !(Number(cart.discount) > 0)) {
+        setDiscount(0);
+        setErrorMessage(cart?.message || "Không thể áp dụng mã giảm giá. Vui lòng thử lại.");
+        return;
+      }
       
       // Đảm bảo cart có đầy đủ thông tin coupon và discount
       const cartData = {
         products: cart.products || cart.cartItems || cartItems,
-        cartTotal: cart.cartTotal || currentTotalPrice,
-        coupon: cart.coupon || coupon.toUpperCase(),
-        discount: cart.discount || discountValue,
-        totalAfterDiscount: cart.totalAfterDiscount || newTotalAfterDiscount,
+        cartTotal: cart.cartTotal || totalPrice,
+        coupon: cart.coupon,
+        discount: cart.discount,
+        totalAfterDiscount: cart.totalAfterDiscount || totalPrice,
       };
       
       console.log("✅ Cart data after apply coupon:", cartData);
       dispatch(setCart(cartData));
-      setDiscount(discountValue);
+      setDiscount(cartData.discount || 0);
       setCoupon(coupon.toUpperCase()); // Đảm bảo local state cũng được cập nhật
       setErrorMessage("");
       toast.success("Áp dụng mã giảm giá thành công!");
     } catch (error) {
       console.error("Coupon error:", error);
       setDiscount(0);
-      setErrorMessage(error.message || "Có lỗi khi áp mã giảm giá.");
+      setErrorMessage(error.response?.data?.message || error.message || "Có lỗi khi áp mã giảm giá.");
     } finally {
       setLoadingCoupon(false);
     }
   };
 
   const handleRemoveCoupon = async () => {
-    // Tính lại totalPrice để đảm bảo tính toán chính xác
-    const currentTotalPrice = cartItems.reduce(
-      (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
-      0
-    );
-    
     if (session?.user?.id) {
       try {
         // Chỉ dùng Server API
         const cart = await cartService.applyCoupon(session.user.id, {
           coupon: "",
-          discount: 0,
-          totalAfterDiscount: currentTotalPrice,
         });
+
+        if (cart && cart._isWarning) {
+          setErrorMessage(cart.message || cart.error || "Không thể xóa mã giảm giá.");
+          return;
+        }
         
         // Đảm bảo cart có đầy đủ thông tin
         const cartData = {
           products: cart.products || cart.cartItems || cartItems,
-          cartTotal: cart.cartTotal || currentTotalPrice,
+          cartTotal: cart.cartTotal || totalPrice,
           coupon: "",
           discount: 0,
-          totalAfterDiscount: cart.totalAfterDiscount || currentTotalPrice,
+          totalAfterDiscount: cart.totalAfterDiscount || totalPrice,
         };
         
         dispatch(setCart(cartData));
@@ -562,10 +500,10 @@ export default function Cart() {
       dispatch(
         setCart({
           products: cartItems,
-          cartTotal: currentTotalPrice,
+          cartTotal: totalPrice,
           coupon: "",
           discount: 0,
-          totalAfterDiscount: currentTotalPrice,
+          totalAfterDiscount: totalPrice,
         })
       );
       setCoupon("");
@@ -1207,10 +1145,15 @@ export default function Cart() {
   const confirmDeleteAddressHandler = async () => {
     if (session?.user?.id) {
       try {
-        const res = await axios.delete(
-          `/api/address?userId=${session.user.id}&addressId=${confirmDeleteAddress}`
-        );
-        setAddresses(res.data.addresses);
+        // Use Server API (Next.js /api/address is disabled)
+        const { addressService } = await import("../../lib/api-services");
+        const res = await addressService.removeById(confirmDeleteAddress);
+        if (res && res._isWarning) {
+          toast.error(res.message || "Có lỗi khi xóa địa chỉ.");
+          return;
+        }
+        const nextAddresses = res.addresses || [];
+        setAddresses(nextAddresses);
         if (selectedAddress && selectedAddress._id === confirmDeleteAddress) {
           setSelectedAddress(null);
         }
@@ -2162,14 +2105,16 @@ export default function Cart() {
         addressData={editAddressData}
         setAddressData={setEditAddressData}
         refreshAddresses={() => {
-          axios.get(`/api/user/${session.user.id}`).then((res) => {
-            setAddresses(res.data.address);
-            if (res.data.address.length > 0) {
-              const defaultAddr =
-                res.data.address.find((addr) => addr.isDefault) ||
-                res.data.address[0];
-              setSelectedAddress(defaultAddr);
-            }
+          // Use Server API for address list
+          import("../../lib/api-services").then(({ addressService }) => {
+            addressService.getAll().then((res) => {
+              const list = res.addresses || [];
+              setAddresses(list);
+              if (list.length > 0) {
+                const defaultAddr = list.find((addr) => addr.isDefault) || list[0];
+                setSelectedAddress(defaultAddr);
+              }
+            });
           });
         }}
       />

@@ -15,6 +15,8 @@ const CouponForm = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [discount, setDiscount] = useState("");
+  const [globalUsageLimit, setGlobalUsageLimit] = useState("");
+  const [perUserUsageLimit, setPerUserUsageLimit] = useState("");
   const [loading, setLoading] = useState(false);
   const [couponsLoading, setCouponsLoading] = useState(false);
   const [coupons, setCoupons] = useState([]);
@@ -63,6 +65,8 @@ const CouponForm = () => {
     setDiscount(String(couponData.discount));
     setStartDate(formatDateForInput(couponData.startDate));
     setEndDate(formatDateForInput(couponData.endDate));
+    setGlobalUsageLimit(couponData.globalUsageLimit == null ? "" : String(couponData.globalUsageLimit));
+    setPerUserUsageLimit(couponData.perUserUsageLimit == null ? "" : String(couponData.perUserUsageLimit));
     // Scroll to form
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -74,6 +78,8 @@ const CouponForm = () => {
     setStartDate("");
     setEndDate("");
     setDiscount("");
+    setGlobalUsageLimit("");
+    setPerUserUsageLimit("");
   };
 
   // Handle form submission
@@ -89,6 +95,16 @@ const CouponForm = () => {
       toast.error("Giảm giá phải từ 1 đến 100");
       return;
     }
+    const globalLimitNum = globalUsageLimit === "" ? null : Number(globalUsageLimit);
+    const perUserLimitNum = perUserUsageLimit === "" ? null : Number(perUserUsageLimit);
+    if (globalLimitNum != null && (!Number.isFinite(globalLimitNum) || globalLimitNum < 0)) {
+      toast.error("Số lượng mã (global) phải là số >= 0 hoặc để trống");
+      return;
+    }
+    if (perUserLimitNum != null && (!Number.isFinite(perUserLimitNum) || perUserLimitNum < 0)) {
+      toast.error("Số lượt / user phải là số >= 0 hoặc để trống");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -101,6 +117,8 @@ const CouponForm = () => {
           startDate,
           endDate,
           discount: Number(discount),
+          globalUsageLimit: globalUsageLimit === "" ? null : Number(globalUsageLimit),
+          perUserUsageLimit: perUserUsageLimit === "" ? null : Number(perUserUsageLimit),
         });
         toast.success("Cập nhật mã giảm giá thành công!");
       } else {
@@ -110,6 +128,8 @@ const CouponForm = () => {
           startDate,
           endDate,
           discount: Number(discount),
+          globalUsageLimit: globalUsageLimit === "" ? null : Number(globalUsageLimit),
+          perUserUsageLimit: perUserUsageLimit === "" ? null : Number(perUserUsageLimit),
         });
         toast.success("Tạo mã giảm giá thành công!");
       }
@@ -119,6 +139,8 @@ const CouponForm = () => {
       setStartDate("");
       setEndDate("");
       setDiscount("");
+      setGlobalUsageLimit("");
+      setPerUserUsageLimit("");
       setEditingId(null);
       fetchCoupons();
     } catch (error) {
@@ -234,6 +256,35 @@ const CouponForm = () => {
           </div>
         </div>
 
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+              Số lượng mã có thể áp dụng (Global)
+            </label>
+            <input
+              type="number"
+              value={globalUsageLimit}
+              onChange={(e) => setGlobalUsageLimit(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+              placeholder="Để trống = không giới hạn"
+              min="0"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+              Số lượt áp dụng tối đa / user
+            </label>
+            <input
+              type="number"
+              value={perUserUsageLimit}
+              onChange={(e) => setPerUserUsageLimit(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+              placeholder="Để trống = không giới hạn"
+              min="0"
+            />
+          </div>
+        </div>
+
         <div className="mt-3 flex gap-2">
           <button
             type="button"
@@ -331,6 +382,16 @@ const CouponForm = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>{formatDate(c.endDate)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700">
+                          Global: {c.globalUsageLimit == null ? "∞" : c.globalUsageLimit} | Used: {c.usedCount || 0} | Reserved: {c.reservedCount || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700">
+                          /User: {c.perUserUsageLimit == null ? "∞" : c.perUserUsageLimit}
+                        </span>
                       </div>
                     </div>
                   </div>

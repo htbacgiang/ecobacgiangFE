@@ -13,8 +13,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import Head from "next/head";
 import { useEffect } from "react";
 import ApiConfigWarning from "../components/common/ApiConfigWarning";
+import { useCartSync } from "../hooks/useCartSync";
 
-let persistor = persistStore(store);
+// Initialize persistor - this is safe to do at module level
+// redux-persist handles SSR correctly
+const persistor = persistStore(store);
 // Khởi tạo font Rajdhani từ Google Fonts
 const rajdhani = Rajdhani({
   subsets: ["latin"],
@@ -22,6 +25,12 @@ const rajdhani = Rajdhani({
   display: "swap",
   variable: "--ltn__heading-font",
 });
+  // Component wrapper để sử dụng hook useCartSync
+  function CartSyncWrapper({ children }) {
+    useCartSync();
+    return <>{children}</>;
+  }
+
   function MyApp({ Component, pageProps: { session, meta, ...pageProps } }) {
   // Debug: Log API configuration (cả development và production để debug VPS)
   useEffect(() => {
@@ -115,23 +124,39 @@ const rajdhani = Rajdhani({
           <ApiConfigWarning />
           <SessionProvider session={session}>
             <Provider store={store}>
-              <PersistGate loading={null} persistor={persistor}>
-                <div className="font-arial">
-                  <ToastContainer
-                    position="top-right"
-                    autoClose={500}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    style={{ zIndex: 10001 }}
-                  />
-                  <Component {...pageProps} />
-                </div>
+              <PersistGate 
+                loading={null} 
+                persistor={persistor}
+                onBeforeLift={() => {
+                  // Debug: log khi rehydration hoàn tất
+                  if (process.env.NODE_ENV === "development") {
+                    console.log("🛒 Redux Persist: Rehydration completed");
+                    const cartState = store.getState().cart;
+                    console.log("🛒 Cart state after rehydration:", {
+                      itemsCount: cartState.cartItems?.length || 0,
+                      total: cartState.cartTotal,
+                    });
+                  }
+                }}
+              >
+                <CartSyncWrapper>
+                  <div className="font-arial">
+                    <ToastContainer
+                      position="top-right"
+                      autoClose={500}
+                      hideProgressBar={false}
+                      newestOnTop={false}
+                      closeOnClick
+                      rtl={false}
+                      pauseOnFocusLoss
+                      draggable
+                      pauseOnHover
+                      theme="light"
+                      style={{ zIndex: 10001 }}
+                    />
+                    <Component {...pageProps} />
+                  </div>
+                </CartSyncWrapper>
               </PersistGate>
             </Provider>
           </SessionProvider>

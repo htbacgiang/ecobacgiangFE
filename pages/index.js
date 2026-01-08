@@ -57,7 +57,7 @@ export default function Home({ posts, meta }) {
         />
       </Head>
       <h1 className="hidden">
-        Eco Bắc Giang - Nông nghiệp hữu cơ - Ứng dụng IT, AI và Robot trong nông nghiệp
+        Eco Bắc Giang - Nông nghiệp hữu cơ - Ứng dụng IoT, AI và Robot trong nông nghiệp
       </h1>
       <CarouselComponent />
       <MonthlySales />

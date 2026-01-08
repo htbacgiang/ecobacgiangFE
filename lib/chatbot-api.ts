@@ -27,10 +27,14 @@ export interface HealthResponse {
 
 class ChatbotAPI {
   private baseURL: string;
+  private apiBaseUrl: string;
+  private serverBaseUrl: string;
 
   constructor() {
-    // Sử dụng Next.js API route thay vì gọi trực tiếp backend
+    // Next.js API routes are disabled in this project. Use Server API instead.
     this.baseURL = '';
+    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL || '';
+    this.serverBaseUrl = this.apiBaseUrl.replace(/\/api\/?$/, '');
   }
 
   /**
@@ -38,7 +42,9 @@ class ChatbotAPI {
    */
   async sendMessage(message: string): Promise<ChatResponse> {
     try {
-      const response = await fetch('/api/chat', {
+      // Fallback: if env is missing, keep old behavior (will likely 503)
+      const url = this.apiBaseUrl ? `${this.apiBaseUrl}/chat` : '/api/chat';
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,17 +69,34 @@ class ChatbotAPI {
    */
   async checkHealth(): Promise<HealthResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/api/health`);
+      // Prefer Server API /health (root), since /api/health does not exist in Next.js API
+      const url = this.serverBaseUrl ? `${this.serverBaseUrl}/health` : `${this.baseURL}/api/health`;
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      // Map Server API health shape -> expected HealthResponse shape (best-effort)
+      if (data && data.status === 'ok' && data.message) {
+        return {
+          status: data.status,
+          qa_chain_loaded: true,
+          data_dir_exists: true,
+          index_dir_exists: true,
+        };
+      }
       return data;
     } catch (error) {
       console.error('Error checking chatbot health:', error);
-      throw new Error('Không thể kết nối với chatbot API.');
+      // Don't hard-crash UI; return a "down" status
+      return {
+        status: 'down',
+        qa_chain_loaded: false,
+        data_dir_exists: false,
+        index_dir_exists: false,
+      };
     }
   }
 

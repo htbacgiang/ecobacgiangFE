@@ -63,10 +63,14 @@ export default function Signup({ csrfToken }) {
       setSuccess(data.message);
       setError("");
       setStatus("Đăng ký thành công!");
-      toast.success("Đăng ký thành công!");
+      toast.success("Đăng ký thành công! Mã xác nhận đã được gửi đến email của bạn.");
       setSubmitting(false);
       setTimeout(() => {
-        Router.push("/dang-nhap");
+        // Chuyển đến trang xác nhận OTP với email
+        Router.push({
+          pathname: "/xac-nhan-email",
+          query: { email: values.email },
+        });
       }, 2000);
     } catch (error) {
       console.error("Signup error:", error);

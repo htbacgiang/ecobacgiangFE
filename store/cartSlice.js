@@ -1,11 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { normalizeUnit } from "../utils/normalizeUnit";
 
-const saveCartToLocalStorage = (state) => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("cart", JSON.stringify(state));
-  }
-};
+// Note: Redux-persist handles localStorage automatically, 
+// so we don't need manual saveCartToLocalStorage calls
 
 const normalizeCartItem = (item) => {
   if (!item) return item;
@@ -19,6 +16,11 @@ const normalizeCartItem = (item) => {
 };
 
 const is100gUnit = (unit) => normalizeUnit(unit) === "100g";
+const isKgUnit = (unit) => {
+  const normalized = normalizeUnit(unit);
+  if (!normalized) return false;
+  return normalized.toString().trim().toLowerCase() === "kg";
+};
 
 const initialState = {
   cartItems: [],
@@ -55,7 +57,6 @@ const cartSlice = createSlice({
         0
       );
       state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
-      saveCartToLocalStorage(state);
     },
 
     removeFromCart: (state, action) => {
@@ -67,7 +68,6 @@ const cartSlice = createSlice({
         0
       );
       state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
-      saveCartToLocalStorage(state);
     },
 
     increaseQuantity: (state, action) => {
@@ -86,7 +86,6 @@ const cartSlice = createSlice({
         );
         state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
       }
-      saveCartToLocalStorage(state);
     },
 
     decreaseQuantity: (state, action) => {
@@ -95,7 +94,20 @@ const cartSlice = createSlice({
         (item) => item.product === productId
       );
       if (index >= 0) {
-        const newQuantity = state.cartItems[index].quantity - step;
+        const item = state.cartItems[index];
+        let newQuantity = item.quantity - step;
+        
+        // Normalize quantity cho kg unit: cho phép giảm xuống 0.5kg
+        if (is100gUnit(item.unit)) {
+          newQuantity = Math.max(0, Math.round(newQuantity));
+        } else if (isKgUnit(item.unit)) {
+          // Normalize về 0.5 steps cho kg
+          newQuantity = Math.round(newQuantity * 2) / 2;
+          newQuantity = Math.max(0.5, newQuantity); // Minimum là 0.5kg
+        } else {
+          newQuantity = Math.max(0, Math.round(newQuantity));
+        }
+        
         if (newQuantity <= 0) {
           state.cartItems.splice(index, 1);
         } else {
@@ -107,7 +119,6 @@ const cartSlice = createSlice({
         );
         state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
       }
-      saveCartToLocalStorage(state);
     },
 
     setQuantity: (state, action) => {
@@ -127,23 +138,133 @@ const cartSlice = createSlice({
         );
         state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
       }
-      saveCartToLocalStorage(state);
     },
 
     setCart: (state, action) => {
-      if (!Array.isArray(action.payload.products)) {
-        console.warn("Dữ liệu products không hợp lệ:", action.payload.products);
+      // Bảo vệ: không clear cart nếu payload không hợp lệ
+      if (!action.payload) {
+        console.warn("setCart: payload không hợp lệ");
+        return;
       }
-      state.cartItems = Array.isArray(action.payload.products)
-        ? action.payload.products.map(normalizeCartItem)
-        : [];
-      state.cartTotal = action.payload.cartTotal || 0;
-      state.coupon = action.payload.coupon || "";
-      state.discount = action.payload.discount || 0;
+
+      // Nếu products là array hợp lệ, set nó
+      if (Array.isArray(action.payload.products)) {
+        state.cartItems = action.payload.products.map(normalizeCartItem);
+      } else if (action.payload.products === undefined) {
+        // Nếu không có products trong payload, giữ nguyên cart hiện tại
+        console.warn("setCart: không có products trong payload, giữ nguyên cart hiện tại");
+        // Chỉ update các field khác nếu có
+        if (action.payload.cartTotal !== undefined) {
+          state.cartTotal = action.payload.cartTotal;
+        }
+        if (action.payload.coupon !== undefined) {
+          state.coupon = action.payload.coupon;
+        }
+        if (action.payload.discount !== undefined) {
+          state.discount = action.payload.discount;
+        }
+        if (action.payload.totalAfterDiscount !== undefined) {
+          state.totalAfterDiscount = action.payload.totalAfterDiscount;
+        } else {
+          state.totalAfterDiscount = state.cartTotal * (1 - (state.discount || 0) / 100);
+        }
+        return;
+      } else {
+        console.warn("setCart: products không phải array:", action.payload.products);
+        return;
+      }
+
+      // Update các field khác
+      state.cartTotal = action.payload.cartTotal ?? state.cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      state.coupon = action.payload.coupon ?? "";
+      state.discount = action.payload.discount ?? 0;
       state.totalAfterDiscount =
-        action.payload.totalAfterDiscount ||
+        action.payload.totalAfterDiscount ??
         state.cartTotal * (1 - (state.discount || 0) / 100);
-      saveCartToLocalStorage(state);
+    },
+
+    // Merge cart từ localStorage với cart từ database
+    mergeCart: (state, action) => {
+      const { localCartItems, dbCartItems } = action.payload;
+      
+      // Tạo map từ database cart để dễ tìm kiếm
+      const dbCartMap = new Map();
+      if (Array.isArray(dbCartItems)) {
+        dbCartItems.forEach(item => {
+          const productId = item.product?.toString() || item.product;
+          if (productId) {
+            dbCartMap.set(productId, {
+              product: productId,
+              price: item.price || 0,
+              quantity: item.quantity || 0,
+              title: item.title || "",
+              image: item.image || "",
+              unit: item.unit || "",
+            });
+          }
+        });
+      }
+
+      // Merge: ưu tiên giữ quantity lớn hơn cho mỗi sản phẩm
+      const mergedItems = [];
+      const processedProducts = new Set();
+
+      // Xử lý items từ localStorage
+      if (Array.isArray(localCartItems)) {
+        localCartItems.forEach(localItem => {
+          const productId = localItem.product?.toString() || localItem.product;
+          if (!productId) return;
+
+          processedProducts.add(productId);
+          const dbItem = dbCartMap.get(productId);
+
+          if (dbItem) {
+            // Có trong cả 2: lấy quantity lớn hơn
+            const mergedQuantity = Math.max(
+              localItem.quantity || 0,
+              dbItem.quantity || 0
+            );
+            mergedItems.push({
+              product: productId,
+              price: localItem.price || dbItem.price || 0,
+              quantity: mergedQuantity,
+              title: localItem.title || dbItem.title || "",
+              image: localItem.image || dbItem.image || "",
+              unit: localItem.unit || dbItem.unit || "",
+            });
+          } else {
+            // Chỉ có trong localStorage: thêm vào
+            mergedItems.push(normalizeCartItem(localItem));
+          }
+        });
+      }
+
+      // Thêm items chỉ có trong database
+      if (Array.isArray(dbCartItems)) {
+        dbCartItems.forEach(dbItem => {
+          const productId = dbItem.product?.toString() || dbItem.product;
+          if (!productId || processedProducts.has(productId)) return;
+
+          mergedItems.push({
+            product: productId,
+            price: dbItem.price || 0,
+            quantity: dbItem.quantity || 0,
+            title: dbItem.title || "",
+            image: dbItem.image || "",
+            unit: dbItem.unit || "",
+          });
+        });
+      }
+
+      state.cartItems = mergedItems.map(normalizeCartItem);
+      state.cartTotal = state.cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      state.totalAfterDiscount = state.cartTotal * (1 - state.discount / 100);
     },
   },
 });
@@ -155,5 +276,6 @@ export const {
   decreaseQuantity,
   setQuantity,
   setCart,
+  mergeCart,
 } = cartSlice.actions;
 export default cartSlice.reducer;

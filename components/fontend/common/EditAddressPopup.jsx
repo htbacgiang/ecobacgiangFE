@@ -95,23 +95,15 @@ export default function EditAddressPopup({
         const { addressService } = await import("../../../lib/api-services");
         
         if (addressData._id) {
-          // Cập nhật địa chỉ: cần tìm index của địa chỉ
-          // Vì không có danh sách addresses ở đây, ta sẽ gọi getAll trước để tìm index
-          const response = await addressService.getAll();
-          const addresses = response.addresses || [];
-          const addressIndex = addresses.findIndex(addr => addr._id === addressData._id);
-          
-          if (addressIndex === -1) {
-            throw new Error("Không tìm thấy địa chỉ cần cập nhật");
-          }
-          
           // Chỉ dùng Server API
-          await addressService.update(addressIndex, addressData);
+          const res = await addressService.updateById(addressData._id, addressData);
+          if (res && res._isWarning) throw new Error(res.message || "Có lỗi khi cập nhật địa chỉ");
         } else {
           // Thêm địa chỉ mới: loại bỏ _id nếu có
           const { _id, ...newAddress } = addressData;
           // Chỉ dùng Server API
-          await addressService.add(newAddress);
+          const res = await addressService.add(newAddress);
+          if (res && res._isWarning) throw new Error(res.message || "Có lỗi khi thêm địa chỉ");
         }
         toast.success("Lưu địa chỉ thành công!");
         if (refreshAddresses) refreshAddresses();

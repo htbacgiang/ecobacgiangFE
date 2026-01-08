@@ -140,7 +140,9 @@ const ShoppingCart = ({ toggleCart }) => {
         const currentCart = await cartService.get(session.user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
         const currentQuantity = Number(productInCart?.quantity ?? 0);
-        const newQuantity = Math.max(0, normalizeQuantity(currentQuantity - step, unit));
+        // Logic giảm xuống 0.5kg khi đang là 1kg
+        const effectiveStep = isKgUnit(unit) && currentQuantity === 1 && step === 1 ? 0.5 : step;
+        const newQuantity = Math.max(0, normalizeQuantity(currentQuantity - effectiveStep, unit));
 
         if (newQuantity === 0) {
           await cartService.remove(session.user.id, productId);
@@ -187,84 +189,46 @@ const ShoppingCart = ({ toggleCart }) => {
       setLoadingCoupon(false);
       return;
     }
-        // Kiểm tra nếu mã giảm giá rỗng
-  if (!coupon || coupon.trim() === "") {
-    setErrorMessage("Vui lòng nhập mã giảm giá.");
-    setLoadingCoupon(false);
-    return;
-  }
+    // Kiểm tra nếu mã giảm giá rỗng
+    if (!coupon || coupon.trim() === "") {
+      setErrorMessage("Vui lòng nhập mã giảm giá.");
+      setLoadingCoupon(false);
+      return;
+    }
     try {
-      // Chỉ dùng Server API
-      const { couponService } = await import("../../../lib/api-services");
-      console.log("🔍 Validating coupon:", coupon.toUpperCase());
-      const couponResponse = await couponService.validate(coupon.toUpperCase());
-      console.log("📦 Coupon Response:", couponResponse);
-      console.log("📦 Response type:", typeof couponResponse);
-      console.log("📦 Is Array:", Array.isArray(couponResponse));
-      
-      // Xử lý response format
-      let couponData = null;
-      if (Array.isArray(couponResponse)) {
-        console.log("📦 Response is array, length:", couponResponse.length);
-        couponData = couponResponse.length > 0 ? couponResponse[0] : null;
-      } else if (couponResponse && typeof couponResponse === 'object') {
-        // Có thể là { coupon: {...} } hoặc object trực tiếp
-        couponData = couponResponse.coupon || couponResponse;
-      }
-      
-      console.log("📦 Coupon Data:", couponData);
-      
-      if (!couponData || !couponData.discount) {
-        console.error("❌ Invalid coupon data:", couponData);
-        setErrorMessage("Mã giảm giá không hợp lệ.");
-        setLoadingCoupon(false);
-        return;
-      }
-      const now = new Date();
-      const start = new Date(couponData.startDate);
-      const end = new Date(couponData.endDate);
-      if (now < start || now > end) {
-        setErrorMessage("Mã giảm giá đã hết hạn hoặc chưa có hiệu lực.");
-        setLoadingCoupon(false);
-        return;
-      }
-      const discountValue = couponData.discount;
-      const discountAmt = (totalPrice * discountValue) / 100;
-      const newTotalAfterDiscount = totalPrice - discountAmt;
-
-      console.log("💰 Discount Value:", discountValue);
-      console.log("💰 Discount Amount:", discountAmt);
-      console.log("💰 Total Price:", totalPrice);
-      console.log("💰 New Total After Discount:", newTotalAfterDiscount);
-
-      // Chỉ dùng Server API
+      const code = coupon.toUpperCase();
       const { cartService } = await import("../../../lib/api-services");
-      console.log("🛒 Applying coupon to cart...");
       const cart = await cartService.applyCoupon(session.user.id, {
-        coupon: coupon.toUpperCase(),
-        discount: discountValue,
-        totalAfterDiscount: newTotalAfterDiscount,
+        coupon: code,
       });
-      console.log("✅ Cart after apply coupon:", cart);
-      console.log("✅ Cart coupon:", cart.coupon);
-      console.log("✅ Cart discount:", cart.discount);
-      
-      // Đảm bảo cart có đúng format
+
+      // apiClient có thể trả về warning object cho 400/404 (không throw).
+      // Tránh overwrite cart về 0 trong trường hợp coupon không hợp lệ/hết lượt.
+      if (cart && cart._isWarning) {
+        setErrorMessage(cart.message || cart.error || "Không thể áp dụng mã giảm giá.");
+        return;
+      }
+      // Safety: if backend didn't actually apply the code, don't show "0%" with the code
+      if (!cart?.coupon || cart.coupon.toUpperCase() !== code || !(Number(cart.discount) > 0)) {
+        setErrorMessage(cart?.message || "Không thể áp dụng mã giảm giá. Vui lòng thử lại.");
+        return;
+      }
+
+      // Đảm bảo cart có đúng format để Redux luôn có coupon/discount => sang /checkout tự sync
       const cartData = {
         products: cart.products || cart.cartItems || [],
         cartTotal: cart.cartTotal || 0,
-        coupon: cart.coupon || coupon.toUpperCase(),
-        discount: cart.discount || discountValue,
-        totalAfterDiscount: cart.totalAfterDiscount || newTotalAfterDiscount,
+        coupon: cart.coupon,
+        discount: cart.discount,
+        totalAfterDiscount: cart.totalAfterDiscount || totalPrice,
       };
-      
-      console.log("✅ Cart data to dispatch:", cartData);
       dispatch(setCart(cartData));
+      setCoupon(cartData.coupon || code);
       setErrorMessage("");
       toast.success("Áp dụng mã giảm giá thành công!");
     } catch (error) {
       console.error("Coupon error:", error);
-      setErrorMessage(error.message || "Có lỗi khi áp mã giảm giá.");
+      setErrorMessage(error.response?.data?.message || error.message || "Có lỗi khi áp mã giảm giá.");
     } finally {
       setLoadingCoupon(false);
     }
@@ -278,11 +242,23 @@ const ShoppingCart = ({ toggleCart }) => {
         const { cartService } = await import("../../../lib/api-services");
         const cart = await cartService.applyCoupon(session.user.id, {
           coupon: "",
-          discount: 0,
-          totalAfterDiscount: totalPrice,
         });
-        dispatch(setCart(cart));
+
+        if (cart && cart._isWarning) {
+          setErrorMessage(cart.message || cart.error || "Không thể xóa mã giảm giá.");
+          return;
+        }
+
+        const cartData = {
+          products: cart.products || cart.cartItems || [],
+          cartTotal: cart.cartTotal || totalPrice,
+          coupon: "",
+          discount: 0,
+          totalAfterDiscount: cart.totalAfterDiscount || totalPrice,
+        };
+        dispatch(setCart(cartData));
         setCoupon("");
+        setErrorMessage("");
         toast.success("Đã xóa mã giảm giá.");
       } catch (error) {
         console.error(error);
@@ -300,6 +276,7 @@ const ShoppingCart = ({ toggleCart }) => {
         })
       );
       setCoupon("");
+      setErrorMessage("");
       toast.success("Đã xóa mã giảm giá.");
     }
   };
@@ -339,6 +316,7 @@ const ShoppingCart = ({ toggleCart }) => {
               </span>
             )}
           </div>
+          
           <button 
             className="cursor-pointer hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" 
             onClick={toggleCart}

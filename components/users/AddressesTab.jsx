@@ -156,20 +156,16 @@ export default function AddressesTab({ userId }) {
       const { addressService } = await import("../../lib/api-services");
       
       if (addressData._id) {
-        // Tìm index của địa chỉ trong danh sách để update
-        const addressIndex = addresses.findIndex(addr => addr._id === addressData._id);
-        if (addressIndex === -1) {
-          throw new Error("Không tìm thấy địa chỉ cần cập nhật");
-        }
-        
         const payload = { ...addressData };
         // Chỉ dùng Server API
-        await addressService.update(addressIndex, payload);
+        const res = await addressService.updateById(addressData._id, payload);
+        if (res && res._isWarning) throw new Error(res.message || "Có lỗi khi cập nhật địa chỉ");
         toast.success("Địa chỉ cập nhật thành công!");
       } else {
         const { _id, ...newAddress } = addressData;
         // Chỉ dùng Server API
-        await addressService.add(newAddress);
+        const res = await addressService.add(newAddress);
+        if (res && res._isWarning) throw new Error(res.message || "Có lỗi khi thêm địa chỉ");
         toast.success("Địa chỉ thêm thành công!");
       }
       resetForm();
@@ -195,15 +191,10 @@ export default function AddressesTab({ userId }) {
   // Xác nhận xóa: gọi API xóa địa chỉ, sau đó reset state confirmDeleteAddressId
   const confirmDelete = async () => {
     try {
-      // Tìm index của địa chỉ trong danh sách để xóa
-      const addressIndex = addresses.findIndex(addr => addr._id === confirmDeleteAddressId);
-      if (addressIndex === -1) {
-        throw new Error("Không tìm thấy địa chỉ cần xóa");
-      }
-      
       // Chỉ dùng Server API
       const { addressService } = await import("../../lib/api-services");
-      await addressService.remove(addressIndex);
+      const res = await addressService.removeById(confirmDeleteAddressId);
+      if (res && res._isWarning) throw new Error(res.message || "Có lỗi khi xóa địa chỉ");
       toast.success("Đã xóa địa chỉ!");
       fetchAddresses();
     } catch (error) {

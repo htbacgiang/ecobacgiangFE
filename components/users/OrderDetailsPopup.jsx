@@ -40,7 +40,7 @@ export default function OrderDetailsPopup({ order, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 mt-4">
       <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-b border-green-200">
@@ -148,22 +148,21 @@ export default function OrderDetailsPopup({ order, onClose }) {
             <div className="space-y-6 hidden md:block">
               {/* Order Status */}
               <div className="bg-white rounded-2xl p-4 border-2 border-gray-200">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <h4 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Truck className="w-5 h-5 text-green-600 mr-2" />
                   Trạng thái đơn hàng
                 </h4>
                 <div className="text-center">
-                  <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-3 ${order.orderStatusColors?.[order.status] || 'bg-gray-100 text-gray-800'}`}>
+                  <div className={`inline-flex items-center px-4 rounded-full text-sm font-medium ${order.orderStatusColors?.[order.status] || 'bg-gray-100 text-gray-800'}`}>
                     {order.orderStatusText?.[order.status] || order.status}
                   </div>
-                  <p className="text-sm text-gray-600">Đơn hàng đang được xử lý</p>
                 </div>
               </div>
 
               {/* Order Details */}
               <div className="bg-white rounded-2xl p-4 border-2 border-gray-200">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Thông tin đơn hàng</h4>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center space-x-3">
                     <Calendar className="w-5 h-5 text-gray-400" />
                     <div>
@@ -206,39 +205,6 @@ export default function OrderDetailsPopup({ order, onClose }) {
                   )}
                 </div>
               </div>
-
-              {/* Customer Info */}
-              {order.customerInfo && (
-                <div className="bg-white rounded-2xl p-4 border-2 border-gray-200">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <User className="w-5 h-5 text-green-600 mr-2" />
-                    Thông tin khách hàng
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Họ tên</p>
-                        <p className="font-medium text-gray-900">{order.customerInfo.fullName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Phone className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Số điện thoại</p>
-                        <p className="font-medium text-gray-900">{order.customerInfo.phone}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Địa chỉ</p>
-                        <p className="font-medium text-gray-900">{order.customerInfo.address}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
