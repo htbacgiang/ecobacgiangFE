@@ -124,7 +124,7 @@ export default function ReturnPolicy() {
                       Gửi thông tin qua các kênh sau:
                     </p>
                     <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                      <li>Zalo/Hotline: <strong>0866.572.271</strong></li>
+                      <li>Zalo/Hotline: <strong>0969.079.673</strong></li>
                       <li>Tính năng &quot;Phản hồi&quot; trên App Eco Bắc Giang</li>
                       <li>Fanpage: Eco Bắc Giang</li>
                     </ul>
@@ -212,7 +212,7 @@ export default function ReturnPolicy() {
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-center">
                   <strong className="min-w-[100px]">Hotline:</strong>
-                  <span className="text-green-700 font-semibold">0866.572.271</span>
+                  <span className="text-green-700 font-semibold">0969.079.673</span>
                 </li>
                 <li className="flex items-center">
                   <strong className="min-w-[100px]">Email:</strong>

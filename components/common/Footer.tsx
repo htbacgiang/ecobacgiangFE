@@ -70,7 +70,7 @@ const Footer = () => {
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                     <FaPhone className="text-white text-base" />
                   </div>
-                  <span className="text-gray-700 text-base font-medium">0866.572.271</span>
+                  <span className="text-gray-700 text-base font-medium">0969.079.673</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
@@ -89,11 +89,10 @@ const Footer = () => {
               </h4>
               <ul className="space-y-3">
                 {[
-                  { href: "/about", label: "Về Eco Bắc Giang" },
-                  { href: "/blog", label: "Blog sống xanh" },
-                  { href: "#", label: "Địa chỉ Maps" },
-                  { href: "#", label: "Tuyển Dụng" },
-                  { href: "#", label: "FAQ" }
+                  { href: "/gioi-thieu-ecobacgiang", label: "Về Eco Bắc Giang" },
+                  { href: "/bai-viet", label: "Blog sống xanh" },
+                  { href: "/lien-he", label: "Liên hệ" },
+                  { href: "/tuyen-dung", label: "Tuyển Dụng" },
                 ].map((item, index) => (
                   <li key={index}>
                     <Link 

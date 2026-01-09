@@ -186,7 +186,7 @@ export const subscriptionEmailTemplate = (email) => {
                           📧 Email: <a href="mailto:lienhe@ecobacgiang.vn" style="mso-line-height-rule:exactly;text-decoration:underline;color:#5C68E2;font-size:14px">lienhe@ecobacgiang.vn</a>
                         </p>
                         <p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;color:#333333;font-size:14px">
-                          📞 Hotline: <a href="tel:0866572271" style="mso-line-height-rule:exactly;text-decoration:underline;color:#5C68E2;font-size:14px">0866.572.271</a>
+                          📞 Hotline: <a href="tel:0866572271" style="mso-line-height-rule:exactly;text-decoration:underline;color:#5C68E2;font-size:14px">0969.079.673</a>
                         </p>
                       </td>
                      </tr>

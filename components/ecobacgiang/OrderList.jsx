@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Eye, Trash2, Edit, Check, X, Package, Truck, CreditCard, Clock, Plus, Minus, Printer } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Eye, Trash2, Edit, Check, X, Package, Truck, CreditCard, Clock, Plus, Minus } from 'lucide-react';
+// import { Printer } from 'lucide-react'; // Tạm thời tắt chức năng in hóa đơn
 import { toast, Toaster } from 'react-hot-toast';
 
 export default function OrderList() {
@@ -23,7 +25,8 @@ export default function OrderList() {
   const [isEditingOrderItems, setIsEditingOrderItems] = useState(false);
   const [editingOrderItems, setEditingOrderItems] = useState([]);
   const [isSavingOrderItems, setIsSavingOrderItems] = useState(false);
-  const [showInvoice, setShowInvoice] = useState(false);
+  // const [showInvoice, setShowInvoice] = useState(false); // Tạm thời tắt chức năng in hóa đơn
+  const [mounted, setMounted] = useState(false);
 
   // States for manual order creation
   const [showCreateOrder, setShowCreateOrder] = useState(false);
@@ -61,6 +64,11 @@ export default function OrderList() {
     { value: 'Sepay', label: 'Sepay' },
     { value: 'MoMo', label: 'MoMo' }
   ];
+
+  // Set mounted state for portal
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch orders
   useEffect(() => {
@@ -922,18 +930,18 @@ export default function OrderList() {
     return result.trim() + ' đồng chẵn';
   };
 
-  // Handle print invoice
-  const handlePrintInvoice = () => {
-    setShowInvoice(true);
-    setTimeout(() => {
-      window.print();
-    }, 100);
-  };
+  // Handle print invoice - Tạm thời tắt
+  // const handlePrintInvoice = () => {
+  //   setShowInvoice(true);
+  //   setTimeout(() => {
+  //     window.print();
+  //   }, 100);
+  // };
 
-  // Close invoice print view
-  const closeInvoice = () => {
-    setShowInvoice(false);
-  };
+  // Close invoice print view - Tạm thời tắt
+  // const closeInvoice = () => {
+  //   setShowInvoice(false);
+  // };
 
   // Handle create order modal
   const openCreateOrder = () => {
@@ -1001,6 +1009,34 @@ export default function OrderList() {
     }
   };
 
+  // Helper functions for 0.5kg logic
+  const normalizeUnit = (input) => {
+    if (input === null || input === undefined) return input;
+    const raw = String(input).trim();
+    if (!raw) return raw;
+    const lower = raw.toLowerCase();
+    if (lower === "gam" || lower === "g" || lower === "gram" || lower === "gr") return "100g";
+    if (lower === "100g" || lower === "100 g" || lower === "100gram" || lower === "100 gram") return "100g";
+    if (lower === "100gam" || lower === "100 gam") return "100g";
+    if (lower === "kg") return "Kg";
+    return raw;
+  };
+
+  const isKgUnit = (unit) => {
+    const normalized = normalizeUnit(unit);
+    if (!normalized) return false;
+    return normalized.toString().trim().toLowerCase() === "kg";
+  };
+
+  const is100gUnit = (unit) => normalizeUnit(unit) === "100g";
+
+  const normalizeQuantity = (qty, unit) => {
+    const n = Number(qty ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    if (isKgUnit(unit)) return Math.round(n * 2) / 2;
+    return Math.round(n);
+  };
+
   // Add product to order
   const addProductToOrder = (product) => {
     const existingItem = newOrderData.orderItems.find(
@@ -1009,9 +1045,16 @@ export default function OrderList() {
     
     if (existingItem) {
       // Increase quantity if product already exists
+      const currentQty = Number(existingItem.quantity ?? 0);
+      const unit = existingItem.unit || product.unit || 'Kg';
+      // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
+      const effectiveStep = isKgUnit(unit) && currentQty === 0.5 ? 0.5 : 1;
+      let newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
+      if (is100gUnit(unit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
+      
       const updatedItems = newOrderData.orderItems.map(item => {
         if (item.product?._id === product._id || item.product === product._id) {
-          return { ...item, quantity: item.quantity + 1 };
+          return { ...item, quantity: newQuantity };
         }
         return item;
       });
@@ -1019,13 +1062,15 @@ export default function OrderList() {
     } else {
       // Add new product
       const price = product.promotionalPrice || product.price || 0;
+      const unit = product.unit || 'Kg';
+      const initialQuantity = isKgUnit(unit) ? 0.5 : 1;
       const newItem = {
         product: product._id,
         title: product.name,
-        quantity: 1,
+        quantity: initialQuantity,
         price: price,
         image: Array.isArray(product.image) ? product.image[0] : product.image,
-        unit: product.unit || 'Kg',
+        unit: unit,
       };
       setNewOrderData({
         ...newOrderData,
@@ -1040,16 +1085,93 @@ export default function OrderList() {
     setNewOrderData({ ...newOrderData, orderItems: updatedItems });
   };
 
-  // Update product quantity
-  const updateProductQuantity = (index, quantity) => {
-    if (quantity < 1) return;
-    const updatedItems = newOrderData.orderItems.map((item, i) => {
+  // Handle increase quantity
+  const handleIncreaseQuantity = (index) => {
+    const item = newOrderData.orderItems[index];
+    if (!item) return;
+    
+    const currentQty = Number(item.quantity ?? 0);
+    const unit = item.unit || 'Kg';
+    // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
+    const effectiveStep = isKgUnit(unit) && currentQty === 0.5 ? 0.5 : 1;
+    let newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
+    if (is100gUnit(unit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
+    
+    const updatedItems = newOrderData.orderItems.map((it, i) => {
       if (i === index) {
-        return { ...item, quantity: parseInt(quantity) || 1 };
+        return { ...it, quantity: newQuantity };
       }
-      return item;
+      return it;
     });
     setNewOrderData({ ...newOrderData, orderItems: updatedItems });
+  };
+
+  // Handle decrease quantity
+  const handleDecreaseQuantity = (index) => {
+    const item = newOrderData.orderItems[index];
+    if (!item) return;
+    
+    const currentQty = Number(item.quantity ?? 0);
+    const unit = item.unit || 'Kg';
+    // Logic giảm xuống 0.5kg khi đang là 1kg
+    const effectiveStep = isKgUnit(unit) && currentQty === 1 ? 0.5 : 1;
+    let newQuantity = Math.max(0, normalizeQuantity(currentQty - effectiveStep, unit));
+    
+    if (is100gUnit(unit)) {
+      newQuantity = Math.max(0, Math.round(newQuantity));
+    } else if (isKgUnit(unit)) {
+      newQuantity = Math.max(0.5, newQuantity); // Minimum là 0.5kg
+    } else {
+      newQuantity = Math.max(0, Math.round(newQuantity));
+    }
+    
+    if (newQuantity <= 0) {
+      // Remove item if quantity is 0
+      const updatedItems = newOrderData.orderItems.filter((_, i) => i !== index);
+      setNewOrderData({ ...newOrderData, orderItems: updatedItems });
+    } else {
+      const updatedItems = newOrderData.orderItems.map((it, i) => {
+        if (i === index) {
+          return { ...it, quantity: newQuantity };
+        }
+        return it;
+      });
+      setNewOrderData({ ...newOrderData, orderItems: updatedItems });
+    }
+  };
+
+  // Update product quantity (for manual input)
+  const updateProductQuantity = (index, quantity) => {
+    const item = newOrderData.orderItems[index];
+    if (!item) return;
+    
+    const qty = Number(quantity);
+    if (!Number.isFinite(qty) || qty < 0) return;
+    
+    const unit = item.unit || 'Kg';
+    let normalizedQty = normalizeQuantity(qty, unit);
+    
+    if (is100gUnit(unit)) {
+      normalizedQty = Math.min(9, Math.max(0, Math.round(normalizedQty)));
+    } else if (isKgUnit(unit)) {
+      normalizedQty = Math.max(0.5, normalizedQty); // Minimum là 0.5kg
+    } else {
+      normalizedQty = Math.max(0, Math.round(normalizedQty));
+    }
+    
+    if (normalizedQty <= 0) {
+      // Remove item if quantity is 0
+      const updatedItems = newOrderData.orderItems.filter((_, i) => i !== index);
+      setNewOrderData({ ...newOrderData, orderItems: updatedItems });
+    } else {
+      const updatedItems = newOrderData.orderItems.map((it, i) => {
+        if (i === index) {
+          return { ...it, quantity: normalizedQty };
+        }
+        return it;
+      });
+      setNewOrderData({ ...newOrderData, orderItems: updatedItems });
+    }
   };
 
   // Calculate order totals
@@ -1397,11 +1519,12 @@ export default function OrderList() {
         </>
       )}
 
-      {/* Enhanced Popup for Order Details */}
-      {selectedOrder && (
+      {/* Enhanced Popup for Order Details - Using Portal */}
+      {selectedOrder && mounted && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-                  onClick={(e) => {
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedOrder(null);
               setIsEditingStatus(false);
@@ -1411,9 +1534,9 @@ export default function OrderList() {
             }
           }}
         >
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl">
+          <div className="bg-white rounded-lg w-full max-w-6xl h-[95vh] overflow-hidden flex flex-col shadow-2xl m-4">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Chi tiết đơn hàng</h2>
@@ -1436,7 +1559,7 @@ export default function OrderList() {
             </div>
 
             {/* Body */}
-            <div className="px-6 py-4 overflow-y-auto flex-1">
+            <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Customer Information */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -1910,19 +2033,20 @@ export default function OrderList() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-600">
                   Đơn hàng được tạo lúc: {new Date(selectedOrder.createdAt).toLocaleString('vi-VN')}
                 </div>
                 <div className="flex gap-2">
-                  <button
+                  {/* Tạm thời tắt chức năng in hóa đơn */}
+                  {/* <button
                     onClick={handlePrintInvoice}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     <Printer size={16} />
                     In hóa đơn
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => {
                       setSelectedOrder(null);
@@ -1939,7 +2063,8 @@ export default function OrderList() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        typeof document !== 'undefined' ? document.body : null
       )}
 
       {/* Delete Confirmation Popup */}
@@ -2042,19 +2167,20 @@ export default function OrderList() {
         </div>
       )}
 
-      {/* Create Order Modal */}
-      {showCreateOrder && (
+      {/* Create Order Modal - Using Portal */}
+      {showCreateOrder && mounted && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               closeCreateOrder();
             }
           }}
         >
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl my-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full h-[95vh] overflow-hidden flex flex-col shadow-2xl m-4">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Tạo đơn hàng mới</h2>
@@ -2071,7 +2197,7 @@ export default function OrderList() {
             </div>
 
             {/* Body */}
-            <div className="px-6 py-4 overflow-y-auto flex-1">
+            <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
               <div className="space-y-6">
                 {/* Customer Information */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -2310,20 +2436,21 @@ export default function OrderList() {
                               </div>
                               <div className="flex items-center gap-2 mx-3">
                                 <button
-                                  onClick={() => updateProductQuantity(index, item.quantity - 1)}
+                                  onClick={() => handleDecreaseQuantity(index)}
                                   className="p-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
                                 >
                                   <Minus size={16} />
                                 </button>
                                 <input
                                   type="number"
+                                  step={isKgUnit(item.unit) ? "0.5" : "1"}
                                   value={item.quantity}
-                                  onChange={(e) => updateProductQuantity(index, parseInt(e.target.value) || 1)}
-                                  min="1"
+                                  onChange={(e) => updateProductQuantity(index, parseFloat(e.target.value) || (isKgUnit(item.unit) ? 0.5 : 1))}
+                                  min={isKgUnit(item.unit) ? "0.5" : "1"}
                                   className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center"
                                 />
                                 <button
-                                  onClick={() => updateProductQuantity(index, item.quantity + 1)}
+                                  onClick={() => handleIncreaseQuantity(index)}
                                   className="p-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
                                 >
                                   <Plus size={16} />
@@ -2380,7 +2507,7 @@ export default function OrderList() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-end gap-3">
                 <button
                   onClick={closeCreateOrder}
@@ -2399,318 +2526,12 @@ export default function OrderList() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        typeof document !== 'undefined' ? document.body : null
       )}
 
-      {/* Invoice Print View */}
-      {showInvoice && selectedOrder && (
-        <>
-          <div className="invoice-preview-container" style={{ 
-            position: 'fixed', 
-            inset: 0, 
-            zIndex: 60, 
-            backgroundColor: 'rgba(0,0,0,0.1)', 
-            overflowY: 'auto',
-            display: 'block'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
-              {/* Close Button */}
-              <div style={{ marginBottom: '16px' }}>
-                <button
-                  onClick={closeInvoice}
-                  className="invoice-close-btn"
-                  style={{
-                    padding: '8px 24px',
-                    backgroundColor: '#374151',
-                    color: 'white',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  Đóng
-                </button>
-              </div>
-
-              {/* Invoice Preview */}
-              <div style={{ 
-                backgroundColor: 'white', 
-                padding: '8px', 
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                width: '80mm',
-                maxWidth: '80mm',
-                boxSizing: 'border-box'
-              }}>
-                <InvoiceContent order={selectedOrder} numberToVietnameseWords={numberToVietnameseWords} />
-              </div>
-            </div>
-          </div>
-
-          {/* Print Only View - Hidden on screen, visible when printing */}
-          <div className="invoice-print-only" style={{ 
-            display: 'none'
-          }}>
-            <InvoiceContent order={selectedOrder} numberToVietnameseWords={numberToVietnameseWords} />
-          </div>
-
-          {/* Print Styles */}
-          <style jsx global>{`
-            @media print {
-              body * {
-                visibility: hidden !important;
-              }
-              
-              .invoice-print-only,
-              .invoice-print-only * {
-                visibility: visible !important;
-                display: block !important;
-              }
-              
-              .invoice-print-only {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 80mm !important;
-                max-width: 80mm !important;
-                padding: 2mm 3mm !important;
-                box-sizing: border-box !important;
-                margin: 0 !important;
-              }
-              
-              .invoice-preview-container,
-              .invoice-close-btn {
-                display: none !important;
-                visibility: hidden !important;
-              }
-              
-              @page {
-                margin: 0 !important;
-                size: 80mm auto;
-              }
-            }
-          `}</style>
-        </>
-      )}
+      {/* Invoice Print View - Tạm thời tắt chức năng in hóa đơn */}
     </div>
   );
 }
 
-// Invoice Content Component
-function InvoiceContent({ order, numberToVietnameseWords }) {
-  const formatDate = (date) => {
-    const d = new Date(date);
-    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  };
-
-  const formatTime = () => {
-    const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  };
-
-  return (
-    <div className="bg-white" style={{ 
-      fontFamily: 'Arial, sans-serif',
-      width: '100%',
-      maxWidth: '80mm',
-      fontSize: '10px',
-      lineHeight: '1.3'
-    }}>
-      {/* Header */}
-      <h1 className="text-center mb-2"  style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '2px' }}>HTX NN THÔNG MINH ECO BẮC GIANG</h1>
-
-      <div className="text-left ml-2" style={{ marginBottom: '4px' }}>
-
-        <p style={{ fontSize: '9px', marginBottom: '1px' }}>ĐC: phường Tân An, Bắc Giang</p>
-        <p style={{ fontSize: '9px', marginBottom: '1px' }}>Hotline: 0979842701</p>
-        <p style={{ fontSize: '8px', marginBottom: '1px' }}>Địa chỉ sản xuất: phường Yên Dũng, tỉnh Bắc Ninh</p>
-        <p style={{ fontSize: '8px', marginBottom: '1px' }}>Số điện thoại liên hệ: 0979.84.2701</p>
-        <p style={{ fontSize: '8px', marginBottom: '1px' }}>Fanpage/Group Facebook: HTX Nông nghiệp thông minh Eco Bắc Giang</p>
-        <p style={{ fontSize: '8px', marginBottom: '3px' }}>Website: ecobacgiang.vn</p>
-        
-      </div>
-      <h2  className="text-center mb-2" style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}>HÓA ĐƠN BÁN HÀNG</h2>
-
-      {/* Order Info */}
-      <div style={{ marginBottom: '4px', fontSize: '9px', lineHeight: '1.4' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-          <span>Ngày: {formatDate(order.createdAt)}</span>
-          <span>Số phiếu: {order.id.slice(-8)}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-          <span>Thu ngân: Ngô Quang Trường</span>
-          <span>In lúc: {formatTime()}</span>
-        </div>
-        <div style={{ fontSize: '9px', wordBreak: 'break-word', marginBottom: '2px' }}>
-          <span>Tên khách hàng: {order.name || 'N/A'}</span>
-        </div>
-        <div style={{ fontSize: '9px', wordBreak: 'break-word', marginBottom: '2px' }}>
-          <span>Địa chỉ: {order.shippingAddress?.address || 'N/A'}</span>
-        </div>
-        <div style={{ fontSize: '9px', wordBreak: 'break-word' }}>
-          <span>Số điện thoại: {order.phone || 'N/A'}</span>
-        </div>
-      </div>
-
-      {/* Items Table */}
-      <div style={{ marginBottom: '4px' }}>
-        <table className="w-full" style={{ 
-          borderCollapse: 'collapse',
-          fontSize: '9px',
-          width: '100%',
-          border: '1px solid black'
-        }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid black' }}>
-              <th style={{ 
-                textAlign: 'left', 
-                padding: '2px 1px', 
-                borderRight: '1px solid black',
-                width: '35%',
-                fontSize: '8px'
-              }}>Mặt hàng</th>
-              <th style={{ 
-                textAlign: 'center', 
-                padding: '2px 1px', 
-                borderRight: '1px solid black',
-                width: '8%',
-                fontSize: '8px'
-              }}>SL</th>
-              <th style={{ 
-                textAlign: 'center', 
-                padding: '2px 1px', 
-                borderRight: '1px solid black',
-                width: '10%',
-                fontSize: '8px'
-              }}>ĐVT</th>
-              <th style={{ 
-                textAlign: 'right', 
-                padding: '2px 1px', 
-                borderRight: '1px solid black',
-                width: '22%',
-                fontSize: '8px'
-              }}>Giá</th>
-              <th style={{ 
-                textAlign: 'right', 
-                padding: '2px 1px',
-                width: '25%',
-                fontSize: '8px'
-              }}>T tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.orderItems?.map((item, index) => (
-              <tr key={index} style={{ borderBottom: '1px solid #ccc' }}>
-                <td style={{ 
-                  padding: '2px 1px', 
-                  borderRight: '1px solid black',
-                  fontSize: '8px',
-                  wordBreak: 'break-word'
-                }}>{item.title}</td>
-                <td style={{ 
-                  textAlign: 'center', 
-                  padding: '2px 1px', 
-                  borderRight: '1px solid black',
-                  fontSize: '9px'
-                }}>{item.quantity}</td>
-                <td style={{ 
-                  textAlign: 'center', 
-                  padding: '2px 1px', 
-                  borderRight: '1px solid black',
-                  fontSize: '8px'
-                }}>{item.unit || 'Cái'}</td>
-                <td style={{ 
-                  textAlign: 'right', 
-                  padding: '2px 1px', 
-                  borderRight: '1px solid black',
-                  fontSize: '8px'
-                }}>{item.price.toLocaleString('vi-VN')}</td>
-                <td style={{ 
-                  textAlign: 'right', 
-                  padding: '2px 1px',
-                  fontSize: '9px',
-                  fontWeight: 'bold'
-                }}>{(item.price * item.quantity).toLocaleString('vi-VN')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Summary */}
-      <div style={{ marginBottom: '4px', fontSize: '9px', lineHeight: '1.4' }}>
-        <div style={{ marginBottom: '2px' }}>
-          <span>Tổng SL {order.orderItems?.length || 0}</span>
-        </div>
-        {(() => {
-          const totalPrice = order.orderItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
-          const discount = order.discount || 0;
-          const discountPercent = totalPrice > 0 ? Math.round((discount / totalPrice) * 100) : 0;
-          const shippingFee = order.shippingFee || 30000;
-          const finalTotal = order.finalTotal || (totalPrice - discount + shippingFee);
-          
-          return (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                <span>Chiết khấu{discountPercent > 0 ? ` (${discountPercent}%)` : ''}:</span>
-                <span style={{ color: discount > 0 ? '#dc2626' : 'inherit' }}>
-                  {discount > 0 ? '-' : ''}{discount.toLocaleString('vi-VN')} đ
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                <span>Phí vận chuyển:</span>
-                <span>{shippingFee.toLocaleString('vi-VN')} đ</span>
-              </div>
-              <div style={{ textAlign: 'right', marginBottom: '2px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '10px' }}>Tổng: {finalTotal.toLocaleString('vi-VN')}</span>
-              </div>
-              <div style={{ fontSize: '8px', fontStyle: 'italic', wordBreak: 'break-word' }}>
-                ({numberToVietnameseWords(finalTotal)})
-              </div>
-            </>
-          );
-        })()}
-      </div>
-
-      {/* Bank Transfer QR Code */}
-      <div style={{ marginTop: '6px', marginBottom: '4px', textAlign: 'center' }}>
-        <div style={{ fontSize: '9px', marginBottom: '3px', fontWeight: 'bold' }}>
-          Chuyển khoản ngân hàng
-        </div>
-        <div style={{ 
-          display: 'inline-block', 
-          padding: '4px', 
-          border: '1px solid #ccc',
-          backgroundColor: '#fff'
-        }}>
-          <Image
-            src={`https://img.vietqr.io/image/TPB-03924302701-compact2.png?amount=${order.finalTotal}&addInfo=${encodeURIComponent(`Thanh toan don hang ${order.id.slice(-8)}`)}&accountName=${encodeURIComponent('NGO QUANG TRUONG')}`}
-            alt="QR Code chuyển khoản"
-            width={120}
-            height={120}
-            style={{ 
-              display: 'block'
-            }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-        </div>
-        <div style={{ fontSize: '8px', marginTop: '3px', lineHeight: '1.3' }}>
-          <div>Ngân hàng: Ngân hàng Tiên Phong</div>
-          <div>STK: 0392 4302 701</div>
-          <div>Chủ TK: NGO QUANG TRUONG</div>
-          <div style={{ fontWeight: 'bold', marginTop: '2px' }}>
-            Số tiền: {order.finalTotal.toLocaleString('vi-VN')} đ
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ textAlign: 'center', marginTop: '6px', fontSize: '9px' }}>
-        <p>Xin cảm ơn Quý khách đã ủng hộ và tin tưởng Eco Bắc Giang</p>
-      </div>
-    </div>
-  );
-}

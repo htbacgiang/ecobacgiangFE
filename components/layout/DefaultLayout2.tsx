@@ -23,7 +23,7 @@ const DefaultLayout2: FC<Props> = ({ title, desc, thumbnail, meta, children }): 
         <GoogleAnalytics />
         <div className="mx-auto max-w-full">{children}</div>
         <NavbarMobile />
-        <ChatWidget />
+        {/* <ChatWidget /> */}
       </div>
     </>
   );

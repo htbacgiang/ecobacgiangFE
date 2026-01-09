@@ -77,7 +77,7 @@ export default function ShippingPolicy() {
                     Cách 3: Đặt hàng qua Hotline/Zalo
                   </h3>
                   <p className="text-gray-700 leading-relaxed">
-                    Liên hệ trực tiếp số: <strong className="text-green-700">0866.572.271</strong> để được nhân viên tư vấn và lên đơn.
+                    Liên hệ trực tiếp số: <strong className="text-green-700">0969.079.673</strong> để được nhân viên tư vấn và lên đơn.
                   </p>
                 </div>
               </div>
@@ -284,7 +284,7 @@ export default function ShippingPolicy() {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <strong className="min-w-[120px]">Hotline:</strong>
-                  <span className="text-green-700 font-semibold text-lg">0866.572.271</span>
+                  <span className="text-green-700 font-semibold text-lg">0969.079.673</span>
                 </li>
                 <li className="flex items-center">
                   <strong className="min-w-[120px]">Email:</strong>

@@ -207,7 +207,7 @@ export default function PrivacyPolicy() {
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">• Yêu cầu xóa thông tin cá nhân:</h3>
                   <p className="text-gray-700">
-                    Quý khách có thể gửi yêu cầu xóa tài khoản và dữ liệu qua Email: <strong className="text-green-700">lienhe@ecobacgiang.vn</strong> hoặc Hotline: <strong className="text-green-700">0866.572.271</strong>. Chúng tôi sẽ thực hiện ngay lập tức sau khi xác minh.
+                    Quý khách có thể gửi yêu cầu xóa tài khoản và dữ liệu qua Email: <strong className="text-green-700">lienhe@ecobacgiang.vn</strong> hoặc Hotline: <strong className="text-green-700">0969.079.673</strong>. Chúng tôi sẽ thực hiện ngay lập tức sau khi xác minh.
                   </p>
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function PrivacyPolicy() {
                 </div>
                 <div className="flex items-center">
                   <strong className="min-w-[180px] text-gray-900">Hotline:</strong>
-                  <span className="text-green-700 font-semibold text-lg">0866.572.271</span>
+                  <span className="text-green-700 font-semibold text-lg">0969.079.673</span>
                 </div>
                 <div className="flex items-center">
                   <strong className="min-w-[180px] text-gray-900">Email:</strong>

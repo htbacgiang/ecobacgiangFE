@@ -18,6 +18,7 @@ import {
   ShoppingBasket,
   Mail,
   Calculator,
+  Briefcase,
 } from "lucide-react";
 
 import { useRouter } from "next/router";
@@ -72,6 +73,11 @@ export default function Sidebar() {
       title: "Kế toán Nội bộ",
       icon: Calculator,
       href: "/dashboard/ke-toan-noi-bo",
+    },
+    {
+      title: "Danh sách ứng viên",
+      icon: Briefcase,
+      href: "/dashboard/danh-sach-ung-vien",
     },
 
     {

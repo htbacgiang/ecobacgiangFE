@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
@@ -58,7 +58,7 @@ export default function Cart() {
     console.log("Session:", !!session?.user?.id);
     console.log("Cart Items:", cartItems.length);
     console.log("Payment Method:", paymentMethod);
-  }, []);
+  }, [cartItems.length, paymentMethod, session?.user?.id]);
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -122,7 +122,7 @@ export default function Cart() {
     : (totalAfterDiscount || totalPrice);
   
   const finalTotalAfterDiscount = calculatedTotalAfterDiscount;
-  const shippingFee = 30000; // Tạm bỏ phí vận chuyển
+  const shippingFee = 0; // Tạm bỏ phí vận chuyển
   const finalTotal = finalTotalAfterDiscount + shippingFee;
 
   // Thông tin chuyển khoản
@@ -231,7 +231,7 @@ export default function Cart() {
     // KHÔNG tự động reset coupon khi Redux không có coupon
     // Chỉ reset khi user tự xóa qua handleRemoveCoupon
     // Điều này đảm bảo coupon được giữ lại khi thay đổi số lượng
-  }, [session?.user?.id, appliedCoupon, reduxDiscount]);
+  }, [session?.user?.id, appliedCoupon, reduxDiscount, coupon, discount]);
 
   // Các hàm xử lý giỏ hàng
   const handleIncreaseQuantity = async (item, step = 1) => {
@@ -514,7 +514,7 @@ export default function Cart() {
   };
 
   // Tạo thanh toán (Sepay/MoMo)
-  const handleCreatePayment = async () => {
+  const handleCreatePayment = useCallback(async () => {
     if (!session?.user?.id) {
       toast.error("Vui lòng đăng nhập để sử dụng thanh toán online");
       setPaymentMethod("COD");
@@ -548,8 +548,14 @@ export default function Cart() {
 
       if (res.success) {
         setPaymentCode(res.paymentCode);
-        setQrUrl(res.qrUrl || res.qrCodeUrl);
+        const qrUrlValue = res.qrUrl || res.qrCodeUrl;
+        setQrUrl(qrUrlValue);
         setPayUrl(res.payUrl);
+
+        console.log("=== PAYMENT RESPONSE ===");
+        console.log("Payment Code:", res.paymentCode);
+        console.log("QR URL:", qrUrlValue);
+        console.log("Full Response:", res);
 
         // Lưu thông tin ngân hàng từ API (cho Sepay)
         if (paymentMethod === "Sepay" && res.bankInfo) {
@@ -558,6 +564,11 @@ export default function Cart() {
           console.log("Bank ID:", res.bankInfo.bankId);
           console.log("Account:", res.bankInfo.accountNumber);
           console.log("Name:", res.bankInfo.accountName);
+        }
+        
+        if (!qrUrlValue) {
+          console.error("⚠️ WARNING: QR URL is missing from response!");
+          toast.error("Không nhận được mã QR từ server. Vui lòng thử lại.");
         }
 
         // Test QR accessibility và sử dụng backup nếu cần
@@ -611,7 +622,7 @@ export default function Cart() {
     } finally {
       setLoadingPayment(false);
     }
-  };
+  }, [session?.user?.id, session?.user?.name, cartItems.length, paymentMethod, name, finalTotal]);
 
   // Refresh QR code cho Sepay
   const handleRefreshQR = async () => {
@@ -916,7 +927,7 @@ export default function Cart() {
       setPayUrl("");
       setIsPaid(false);
     }
-  }, [paymentMethod, session?.user?.id, cartItems.length]);
+  }, [paymentMethod, session?.user?.id, cartItems.length, handleCreatePayment]);
 
   // Ref để theo dõi tổng tiền trước đó
   const prevFinalTotalRef = useRef(finalTotal);
@@ -943,7 +954,7 @@ export default function Cart() {
         }
       }
     }
-  }, [finalTotal, paymentMethod, session?.user?.id, cartItems.length, paymentCode, loadingPayment]);
+  }, [finalTotal, paymentMethod, session?.user?.id, cartItems.length, paymentCode, loadingPayment, handleCreatePayment]);
 
   // Auto checkout khi thanh toán thành công
   useEffect(() => {
@@ -1018,7 +1029,7 @@ export default function Cart() {
     };
 
     autoCheckout();
-  }, [isPaid, checkoutCompleted, autoCheckoutLoading, paymentMethod, session, name, phone, selectedAddress, address, cartItems, note, coupon, discount, totalPrice, finalTotalAfterDiscount, finalTotal, shippingFee, paymentCode]);
+  }, [isPaid, checkoutCompleted, autoCheckoutLoading, paymentMethod, session, name, phone, selectedAddress, address, cartItems, note, coupon, discount, totalPrice, finalTotalAfterDiscount, finalTotal, shippingFee, paymentCode, deliveryTime, dispatch]);
 
   // --- Đặt hàng: chỉ cho Sepay nếu đã isPaid === true ---
   const handleCheckout = async () => {
@@ -1075,7 +1086,6 @@ export default function Cart() {
       );
     } catch (error) {
       console.error(error);
-      toast.error("Có lỗi khi đặt hàng.");
     }
   };
 
@@ -1746,31 +1756,48 @@ export default function Cart() {
                         </div>
                       ) : (
                         <>
-                          <div className="bg-white p-4 rounded-lg shadow-md inline-block">
-                            <Image
-                              src={qrUrl}
-                              alt={`QR Code ${paymentMethod}`}
-                              width={256}
-                              height={256}
-                              className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
-                              unoptimized
-                              onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextSibling.style.display = "block";
-                              }}
-                            />
-                            <div className="hidden text-center py-8">
-                                <p className="text-red-500 mb-2">
-                                  Không thể tải mã QR
-                                </p>
+                          {qrUrl ? (
+                            <div className="bg-white p-4 rounded-lg shadow-md inline-block">
+                              <Image
+                                src={qrUrl}
+                                alt={`QR Code ${paymentMethod}`}
+                                width={256}
+                                height={256}
+                                className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
+                                unoptimized
+                                onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.nextSibling.style.display = "block";
+                                }}
+                              />
+                              <div className="hidden text-center py-8">
+                                  <p className="text-red-500 mb-2">
+                                    Không thể tải mã QR
+                                  </p>
+                                <button
+                                  onClick={handleCreatePayment}
+                                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                  Thử lại
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-lg">
+                              <p className="text-yellow-700 font-medium mb-3">
+                                ⚠️ Chưa có mã QR
+                              </p>
+                              <p className="text-sm text-yellow-600 mb-4">
+                                Mã QR chưa được tạo. Vui lòng nhấn nút &quot;Tạo mã QR thanh toán&quot; ở trên.
+                              </p>
                               <button
                                 onClick={handleCreatePayment}
                                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                               >
-                                Thử lại
+                                Tạo mã QR
                               </button>
                             </div>
-                          </div>
+                          )}
 
                           <div className="mt-3 space-y-3">
                             <div className="bg-gray-50 p-3 rounded-lg">

@@ -30,7 +30,7 @@ export default function ContactPage() {
 
   const contactInfo = {
     address: "Tân An, Yên Dũng, Bắc Giang",
-    phone: "0866.572.271",
+    phone: "0969.079.673",
     email: "lienhe@ecobacgiang.vn",
     workingHours: {
       weekdays: "Thứ 2 - Thứ 7: 8:00 - 18:00",
@@ -42,7 +42,7 @@ export default function ContactPage() {
     { name: "Facebook", icon: FaFacebookF, url: "https://facebook.com/ecobacgiang", color: "bg-blue-600" },
     { name: "Instagram", icon: FaInstagram, url: "https://instagram.com/ecobacgiang", color: "bg-pink-600" },
     { name: "YouTube", icon: FaYoutube, url: "https://youtube.com/@ecobacgiang", color: "bg-red-600" },
-    { name: "Zalo", icon: SiZalo, url: "https://zalo.me/0866572271", color: "bg-blue-500" }
+    { name: "Zalo", icon: SiZalo, url: "https://zalo.me/0969079673", color: "bg-blue-500" }
   ];
 
   const productTypes = [

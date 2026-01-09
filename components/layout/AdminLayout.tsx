@@ -10,9 +10,7 @@ import {
 } from "react-icons/ai";
 import { IoIdCardSharp } from "react-icons/io5";
 import AppHead from "../common/AppHead";
-import AdminSecondaryNav from "../common/nav/AdminSecondaryNav";
 import Slidebar from '../backend/Slidebar';
-import Navbar from '../backend/Navbar';
 interface Props {
   children: ReactNode;
   title?: string;

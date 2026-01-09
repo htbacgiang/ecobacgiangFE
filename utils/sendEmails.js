@@ -1,44 +1,43 @@
 import nodemailer from "nodemailer";
-import { google } from "googleapis";
 import { activateEmailTemplate } from "../emails/activateEmailTemplate";
-const { OAuth2 } = google.auth;
-const   OAUTH_PLAYGROUND = "https://developers.google.com/oauthplayground";
 
 const {
-  MAILING_SERVICE_CLIENT_ID,
-  MAILING_SERVICE_CLIENT_SECRET,
-  MAILING_SERVICE_REFRESH_TOKEN,
   SENDER_EMAIL_ADDRESS,
+  SENDER_EMAIL_PASSWORD,
 } = process.env;
-console.log({
-  MAILING_SERVICE_CLIENT_ID,
-  MAILING_SERVICE_CLIENT_SECRET,
-  MAILING_SERVICE_REFRESH_TOKEN,
-  SENDER_EMAIL_ADDRESS,
-});
-const oauth2Client = new OAuth2(
-  MAILING_SERVICE_CLIENT_ID,
-  MAILING_SERVICE_CLIENT_SECRET,
-  MAILING_SERVICE_REFRESH_TOKEN,
-  OAUTH_PLAYGROUND
-);
 
-//send email
+// Validate email configuration
+if (!SENDER_EMAIL_ADDRESS || !SENDER_EMAIL_PASSWORD) {
+  console.error("❌ EMAIL CONFIGURATION ERROR:");
+  console.error("Missing required environment variables:");
+  if (!SENDER_EMAIL_ADDRESS) {
+    console.error("  - SENDER_EMAIL_ADDRESS is not set");
+  }
+  if (!SENDER_EMAIL_PASSWORD) {
+    console.error("  - SENDER_EMAIL_PASSWORD is not set");
+  }
+  console.error("\n📝 Please add these to your .env.local or .env file:");
+  console.error("   SENDER_EMAIL_ADDRESS=your-email@gmail.com");
+  console.error("   SENDER_EMAIL_PASSWORD=your-16-digit-app-password");
+  console.error("\n📖 See HUONG_DAN_CAU_HINH_EMAIL_APP_PASSWORD.md for instructions\n");
+}
 
+// Send email using App Password
 export const sendEmail = (to, url, txt, subject, template) => {
-  oauth2Client.setCredentials({
-    refresh_token: MAILING_SERVICE_REFRESH_TOKEN,
-  });
-  const accessToken = oauth2Client.getAccessToken();
+  // Check if credentials are available
+  if (!SENDER_EMAIL_ADDRESS || !SENDER_EMAIL_PASSWORD) {
+    const error = new Error(
+      "Email configuration is missing. Please set SENDER_EMAIL_ADDRESS and SENDER_EMAIL_PASSWORD in your .env file."
+    );
+    console.error("Error sending email:", error.message);
+    return Promise.reject(error);
+  }
+
   const smtpTransport = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      type: "OAuth2",
       user: SENDER_EMAIL_ADDRESS,
-      clientId: MAILING_SERVICE_CLIENT_ID,  
-      clientSecret: MAILING_SERVICE_CLIENT_SECRET,
-      refreshToken: MAILING_SERVICE_REFRESH_TOKEN,
-      accessToken,
+      pass: SENDER_EMAIL_PASSWORD, // App Password từ Google
     },
   });
   

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Eye, Trash2 } from 'lucide-react';
 
 export default function TopCustomers() {
@@ -14,6 +15,12 @@ export default function TopCustomers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted state for portal
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch orders and aggregate by customer
   useEffect(() => {
@@ -428,18 +435,19 @@ export default function TopCustomers() {
         </>
       )}
 
-      {/* Popup for Customer Order Details */}
-      {selectedCustomer && (
+      {/* Popup for Customer Order Details - Using Portal */}
+      {selectedCustomer && mounted && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedCustomer(null);
             }
           }}
         >
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="bg-white rounded-lg max-w-6xl w-full h-[95vh] overflow-hidden flex flex-col shadow-2xl m-4">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Chi tiết đơn hàng của {selectedCustomer.name}</h2>
@@ -454,7 +462,7 @@ export default function TopCustomers() {
                 </button>
               </div>
             </div>
-            <div className="px-6 py-4 overflow-y-auto flex-1">
+            <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Customer Information */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -578,7 +586,7 @@ export default function TopCustomers() {
               </div>
             </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-600">
                   Tổng chi tiêu: {formatVND(selectedCustomer.totalSpent)}
@@ -592,13 +600,15 @@ export default function TopCustomers() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        typeof document !== 'undefined' ? document.body : null
       )}
 
-      {/* Delete Confirmation Popup */}
-      {customerToDelete && (
+      {/* Delete Confirmation Popup - Using Portal */}
+      {customerToDelete && mounted && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !isDeleting) {
               setCustomerToDelete(null);
@@ -664,7 +674,8 @@ export default function TopCustomers() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        typeof document !== 'undefined' ? document.body : null
       )}
     </div>
   );

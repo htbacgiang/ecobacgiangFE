@@ -25,7 +25,7 @@ export default function LienHe({ meta }) {
       "contactPoint": [
         {
           "@type": "ContactPoint",
-          "telephone": "+84-866-572-271",
+          "telephone": "+84-969-079-673",
           "contactType": "customer service",
           "availableLanguage": ["Vietnamese"],
           "hoursAvailable": {
@@ -76,7 +76,7 @@ export async function getServerSideProps() {
   const meta = {
     title: "Liên hệ Eco Bắc Giang - Tư vấn sản phẩm nông sản hữu cơ miễn phí",
     description:
-      "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0866.572.271. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
+      "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0969.079.673. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
     keywords:
       "liên hệ Eco Bắc Giang, tư vấn nông sản hữu cơ, hotline Eco Bắc Giang, địa chỉ Eco Bắc Giang, email Eco Bắc Giang, tư vấn miễn phí, nông sản hữu cơ, sản phẩm hữu cơ",
     robots: "index, follow",
@@ -85,7 +85,7 @@ export async function getServerSideProps() {
     og: {
       title: "Liên hệ Eco Bắc Giang - Tư vấn sản phẩm nông sản hữu cơ miễn phí",
       description:
-        "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0866.572.271. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
+        "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0969.079.673. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
       type: "website",
       image: `${BASE_URL}/images/banner.png`,
       imageWidth: "1200",
@@ -98,7 +98,7 @@ export async function getServerSideProps() {
       card: "summary_large_image",
       title: "Liên hệ Eco Bắc Giang - Tư vấn sản phẩm nông sản hữu cơ miễn phí",
       description:
-        "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0866.572.271. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
+        "Liên hệ ngay với Eco Bắc Giang để được tư vấn về sản phẩm nông sản hữu cơ miễn phí. Hotline: 0969.079.673. Email: lienhe@ecobacgiang.vn. Chúng tôi luôn sẵn sàng hỗ trợ bạn về các sản phẩm nông sản hữu cơ chất lượng cao.",
       image: `${BASE_URL}/images/banner.png`,
       site: "@EcoBacGiang",
     },

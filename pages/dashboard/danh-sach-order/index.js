@@ -5,14 +5,9 @@ import OrderStats from '../../../components/ecobacgiang/OrderStats';
 import TopProducts from '../../../components/ecobacgiang/TopProducts';
 import TopCustomers from '../../../components/ecobacgiang/TopCustomers';
 
-/**
- * Orders Page - Client-side rendered only
- * This page does NOT use getStaticProps, getStaticPaths, or getServerSideProps
- * All data fetching is done client-side via useEffect hooks in child components
- */
 function OrdersPage() {
   return (
-    <AdminLayout title="Danh sách đơn hàng">
+    <AdminLayout title="Danh sách đơn hàng">  
       <div className="orders-page-container">
 
         {/* Main Content - Vertical Layout */}

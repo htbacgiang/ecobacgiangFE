@@ -63,8 +63,7 @@ export default function CaiDat() {
 
   const [shippingSettings, setShippingSettings] = useState({
     baseShippingCost: '30000',
-    shippingPerKm: '2000',
-    estimatedDeliveryDays: '2-3',
+    estimatedDeliveryDays: 'Trong ngày',
     enableTracking: true
   });
 
@@ -482,17 +481,6 @@ export default function CaiDat() {
             type="number"
             value={shippingSettings.baseShippingCost}
             onChange={(e) => setShippingSettings({...shippingSettings, baseShippingCost: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phí vận chuyển mỗi km (VNĐ)
-          </label>
-          <input
-            type="number"
-            value={shippingSettings.shippingPerKm}
-            onChange={(e) => setShippingSettings({...shippingSettings, shippingPerKm: e.target.value})}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>

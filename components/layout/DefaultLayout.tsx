@@ -24,7 +24,7 @@ const DefaultLayout: FC<Props> = ({ title, desc, thumbnail, meta, children }): J
         <div className="mx-auto max-w-full">{children}</div>
         <Footer />
         <NavbarMobile />
-        <ChatWidget />
+        {/* <ChatWidget /> */}
       </div>
     </>
   );

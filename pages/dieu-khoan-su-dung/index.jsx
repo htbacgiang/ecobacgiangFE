@@ -342,7 +342,7 @@ export default function TermsOfService() {
                 </div>
                 <div className="flex items-center">
                   <strong className="min-w-[180px] text-gray-900">Hotline:</strong>
-                  <span className="text-green-700 font-semibold text-lg">0866.572.271</span>
+                  <span className="text-green-700 font-semibold text-lg">0969.079.673</span>
                 </div>
                 <div className="flex items-center">
                   <strong className="min-w-[180px] text-gray-900">Email:</strong>

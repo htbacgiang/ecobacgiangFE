@@ -2,6 +2,8 @@ import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 import { sendEmail } from '../../../utils/sendEmails';
+import db from '../../../utils/db';
+import RecruitmentApplication from '../../../models/RecruitmentApplication';
 
 // Disable default body parser to handle file uploads
 export const config = {
@@ -141,13 +143,13 @@ export default async function handler(req, res) {
     // Parse form data
     const { fields, files } = await parseForm(req);
 
-    // Extract form fields
-    const name = fields.name?.[0] || fields.name;
-    const phone = fields.phone?.[0] || fields.phone;
-    const email = fields.email?.[0] || fields.email;
-    const introduction = fields.introduction?.[0] || fields.introduction || '';
-    const jobTitle = fields.jobTitle?.[0] || fields.jobTitle || '';
-    const jobId = fields.jobId?.[0] || fields.jobId || '';
+    // Extract form fields - handle both array and string formats from formidable
+    const name = (Array.isArray(fields.name) ? fields.name[0] : fields.name)?.trim() || '';
+    const phone = (Array.isArray(fields.phone) ? fields.phone[0] : fields.phone)?.trim() || '';
+    const email = (Array.isArray(fields.email) ? fields.email[0] : fields.email)?.trim() || '';
+    const introduction = (Array.isArray(fields.introduction) ? fields.introduction[0] : fields.introduction)?.trim() || '';
+    const jobTitle = (Array.isArray(fields.jobTitle) ? fields.jobTitle[0] : fields.jobTitle)?.trim() || '';
+    const jobId = (Array.isArray(fields.jobId) ? fields.jobId[0] : fields.jobId)?.trim() || '';
 
     // Validation
     if (!name || !phone || !email) {
@@ -191,8 +193,24 @@ export default async function handler(req, res) {
       // Rename file
       fs.renameSync(file.filepath, newFilePath);
       cvFileName = uniqueFileName;
-      cvFilePath = newFilePath;
+      // Store relative path from public folder for easy access
+      cvFilePath = `/uploads/recruitment/${uniqueFileName}`;
     }
+
+    // Save to database
+    await db.connectDb();
+    const application = new RecruitmentApplication({
+      name,
+      phone,
+      email,
+      introduction,
+      jobTitle,
+      jobId,
+      cvFileName,
+      cvFilePath,
+      status: 'pending'
+    });
+    await application.save();
 
     // Prepare email data
     const emailData = {
