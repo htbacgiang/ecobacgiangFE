@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, MapPin, Phone, User, Home, Building } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import AddressMap from "./AddressMap";
 
 export default function AddressesTab({ userId }) {
   const [addresses, setAddresses] = useState([]);
@@ -30,6 +31,10 @@ export default function AddressesTab({ userId }) {
   
   // State xác nhận xóa địa chỉ
   const [confirmDeleteAddressId, setConfirmDeleteAddressId] = useState(null);
+  
+  // State hiển thị bản đồ
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedAddressForMap, setSelectedAddressForMap] = useState(null);
   
   useEffect(() => {
     if (showForm && dataAll.length === 0) {
@@ -280,10 +285,20 @@ export default function AddressesTab({ userId }) {
                   </div>
                   
                   <div className="ml-1">
-                    <div className="bg-gray-50 p-3 rounded-lg border-l-3 border-green-500">
-                      <p className="text-gray-700 leading-relaxed text-sm font-medium">
-                        {addr.address1}, {addr.wardName}, {addr.districtName}, {addr.cityName}
-                      </p>
+                    <div 
+                      className="bg-gray-50 p-3 rounded-lg border-l-3 border-green-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => {
+                        setSelectedAddressForMap(addr);
+                        setShowMapModal(true);
+                      }}
+                      title="Click để xem trên bản đồ"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-gray-700 leading-relaxed text-sm font-medium">
+                          {addr.address1}, {addr.wardName}, {addr.districtName}, {addr.cityName}
+                        </p>
+                        <MapPin className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                      </div>
                     </div>
            
                   </div>
@@ -552,6 +567,19 @@ export default function AddressesTab({ userId }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal hiển thị bản đồ */}
+      {showMapModal && selectedAddressForMap && (
+        <AddressMap
+          address={selectedAddressForMap}
+          showModal={true}
+          onClose={() => {
+            setShowMapModal(false);
+            setSelectedAddressForMap(null);
+          }}
+          height="500px"
+        />
       )}
     </div>
   );

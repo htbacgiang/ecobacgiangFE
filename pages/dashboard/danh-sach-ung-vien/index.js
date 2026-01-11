@@ -29,7 +29,8 @@ const RecruitmentManagement = () => {
     if (status === 'loading') return;
     
     if (!session || session.user.role !== 'admin') {
-      router.push('/dang-nhap');
+      const currentPath = router.asPath || router.pathname;
+      router.push(`/dang-nhap?callbackUrl=${encodeURIComponent(currentPath)}`);
       return;
     }
 

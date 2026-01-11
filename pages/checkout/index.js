@@ -122,15 +122,15 @@ export default function Cart() {
     : (totalAfterDiscount || totalPrice);
   
   const finalTotalAfterDiscount = calculatedTotalAfterDiscount;
-  const shippingFee = 0; // Tạm bỏ phí vận chuyển
+  const shippingFee = 30000; // Phí vận chuyển
   const finalTotal = finalTotalAfterDiscount + shippingFee;
 
   // Thông tin chuyển khoản
   const bankTransferInfo = {
-    bankId: "TPB",
-    bankName: "Ngân hàng Tiên Phong",
-    bankAccount: "0392 4302 701",
-    accountName: "NGO QUANG TRUONG",
+    bankId: "MBB",
+    bankName: "Ngân hàng MB",
+    bankAccount: "881810666",
+    accountName: "NGUYEN CONG TUYEN",
   };
 
   // Hàm chuyển đổi tiếng Việt có dấu thành không dấu
@@ -1758,28 +1758,35 @@ export default function Cart() {
                         <>
                           {qrUrl ? (
                             <div className="bg-white p-4 rounded-lg shadow-md inline-block">
-                              <Image
-                                src={qrUrl}
-                                alt={`QR Code ${paymentMethod}`}
-                                width={256}
-                                height={256}
-                                className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
-                                unoptimized
-                                onError={(e) => {
-                                    e.target.style.display = "none";
-                                    e.target.nextSibling.style.display = "block";
-                                }}
-                              />
-                              <div className="hidden text-center py-8">
-                                  <p className="text-red-500 mb-2">
+                              <div className="relative">
+                                <Image
+                                  src={qrUrl}
+                                  alt={`QR Code ${paymentMethod}`}
+                                  width={256}
+                                  height={256}
+                                  className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
+                                  unoptimized
+                                  onError={(e) => {
+                                    const container = e.target.closest('.relative');
+                                    if (container) {
+                                      const img = container.querySelector('img');
+                                      const errorDiv = container.querySelector('.qr-error');
+                                      if (img) img.style.display = "none";
+                                      if (errorDiv) errorDiv.style.display = "block";
+                                    }
+                                  }}
+                                />
+                                <div className="qr-error hidden text-center py-8">
+                                  <p className="text-red-500 mb-2 font-medium">
                                     Không thể tải mã QR
                                   </p>
-                                <button
-                                  onClick={handleCreatePayment}
-                                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                >
-                                  Thử lại
-                                </button>
+                                  <button
+                                    onClick={handleCreatePayment}
+                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                                  >
+                                    Thử lại
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ) : (

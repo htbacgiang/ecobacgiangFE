@@ -32,7 +32,8 @@ export default withAuth(
     // Nếu đang truy cập trang admin mà chưa đăng nhập
     if (isAdminPage) {
       if (!isAuth) {
-        return NextResponse.redirect(new URL("/dang-nhap", req.url));
+        const callbackUrl = req.nextUrl.pathname + req.nextUrl.search;
+        return NextResponse.redirect(new URL(`/dang-nhap?callbackUrl=${encodeURIComponent(callbackUrl)}`, req.url));
       }
       
       // Nếu đã đăng nhập nhưng không phải admin

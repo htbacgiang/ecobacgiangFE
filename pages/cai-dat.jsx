@@ -84,7 +84,8 @@ export default function CaiDat() {
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
-      router.push('/dang-nhap');
+      const currentPath = router.asPath || router.pathname;
+      router.push(`/dang-nhap?callbackUrl=${encodeURIComponent(currentPath)}`);
     }
   }, [session, status, router]);
 

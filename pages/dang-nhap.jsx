@@ -64,10 +64,20 @@ export default function Signin({ providers, callbackUrl, csrfToken }) {
         localStorage.removeItem("savedEmail");
       }
       
-      // Tất cả user (kể cả admin) đều redirect về trang chủ
-      const redirectUrl = callbackUrl && callbackUrl !== "/dashboard" ? callbackUrl : "/";
+      // Xử lý redirect về trang trước đó (callbackUrl)
+      let redirectUrl = "/";
       
-      // Redirect về trang chủ
+      if (callbackUrl) {
+        // Loại bỏ các trang không hợp lệ (đăng nhập, đăng ký)
+        const invalidPaths = ["/dang-nhap", "/dang-ky", "/auth/quen-mat-khau", "/auth/dat-lai-mat-khau"];
+        const isValidCallback = !invalidPaths.some(path => callbackUrl.includes(path));
+        
+        if (isValidCallback) {
+          redirectUrl = callbackUrl;
+        }
+      }
+      
+      // Redirect về trang trước đó hoặc trang chủ
       setTimeout(() => router.push(redirectUrl), 500);
     } catch (error) {
       setStatus(`Lỗi: ${error.message || "Đã xảy ra lỗi khi đăng nhập"}`);
@@ -90,8 +100,18 @@ export default function Signin({ providers, callbackUrl, csrfToken }) {
         setStatus("Đăng nhập thành công!");
         toast.success(`Đăng nhập bằng ${providerId} thành công!`);
         
-        // Tất cả user (kể cả admin) đều redirect về trang chủ
-        const redirectUrl = callbackUrl && callbackUrl !== "/dashboard" ? callbackUrl : "/";
+        // Xử lý redirect về trang trước đó (callbackUrl)
+        let redirectUrl = "/";
+        
+        if (callbackUrl) {
+          // Loại bỏ các trang không hợp lệ (đăng nhập, đăng ký)
+          const invalidPaths = ["/dang-nhap", "/dang-ky", "/auth/quen-mat-khau", "/auth/dat-lai-mat-khau"];
+          const isValidCallback = !invalidPaths.some(path => callbackUrl.includes(path));
+          
+          if (isValidCallback) {
+            redirectUrl = callbackUrl;
+          }
+        }
         
         setTimeout(() => router.push(redirectUrl), 1000);
       }
