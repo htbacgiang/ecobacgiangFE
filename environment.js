@@ -1,0 +1,33 @@
+// Environment configuration
+// Copy this to .env.local file
+
+module.exports = {
+  // Server API URL - REQUIRED
+  // This is the URL of the separate Node.js API server
+  // All API calls will be made to this server instead of Next.js API routes
+  NEXT_PUBLIC_API_SERVER_URL: "http://localhost:5000/api",
+  
+  // MongoDB
+  MONGODB_URI: "mongodb://localhost:27017/ecobacgiang",
+  
+  // NextAuth
+  NEXTAUTH_SECRET: "your-secret-key-here",
+  NEXTAUTH_URL: "http://localhost:3000",
+  
+  // Cloudinary
+  CLOUD_NAME: "your-cloud-name",
+  CLOUD_API_KEY: "your-api-key", 
+  CLOUD_API_SECRET: "your-api-secret",
+  
+  // OAuth Providers
+  FACEBOOK_ID: "your-facebook-id",
+  FACEBOOK_SECRET: "your-facebook-secret",
+  GOOGLE_ID: "your-google-id",
+  GOOGLE_SECRET: "your-google-secret",
+  GITHUB_CLIENT_ID: "your-github-id",
+  GITHUB_CLIENT_SECRET: "your-github-secret",
+  
+  // Payment Configuration (if needed)
+  // STRIPE_SECRET_KEY: "your-stripe-key",
+  // PAYPAL_CLIENT_ID: "your-paypal-id"
+};

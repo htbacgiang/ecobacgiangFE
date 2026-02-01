@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://ecobacgiang.vn
+
+# Sitemaps
+Sitemap: https://ecobacgiang.vn/api/sitemap.xml
