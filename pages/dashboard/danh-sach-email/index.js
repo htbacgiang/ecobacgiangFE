@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import useAuth from '../../../hooks/useAuth';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../../components/layout/AdminLayout';
 import { toast } from 'react-hot-toast';
 
 const SubscriptionManagement = () => {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const router = useRouter();
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ const SubscriptionManagement = () => {
     fetchSubscriptions();
     fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSubscriptions/fetchStats use currentPage/searchTerm, intentional deps
-  }, [session, status, currentPage, searchTerm, statusFilter, router]);
+  }, [user, status, currentPage, searchTerm, statusFilter, router]);
 
   const fetchSubscriptions = async () => {
     try {

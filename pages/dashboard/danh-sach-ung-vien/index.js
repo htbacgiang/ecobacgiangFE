@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import useAuth from '../../../hooks/useAuth';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../../components/layout/AdminLayout';
 import { toast } from 'react-hot-toast';
@@ -9,7 +9,7 @@ import { Eye, FileText, Mail, Phone, User, Briefcase, Calendar, Filter, X } from
 const API_BASE = process.env.NEXT_PUBLIC_API_SERVER_URL?.replace(/\/api\/?$/, '') || '';
 
 const RecruitmentManagement = () => {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const router = useRouter();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ const RecruitmentManagement = () => {
   useEffect(() => {
     if (status === 'loading') return;
     
-    if (!session || session.user.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
       const currentPath = router.asPath || router.pathname;
       router.push(`/dang-nhap?callbackUrl=${encodeURIComponent(currentPath)}`);
       return;
@@ -40,7 +40,7 @@ const RecruitmentManagement = () => {
     fetchApplications();
     fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchApplications/fetchStats use filters, intentional deps
-  }, [session, status, currentPage, searchTerm, statusFilter, jobTitleFilter, router]);
+  }, [user, status, currentPage, searchTerm, statusFilter, jobTitleFilter, router]);
 
   const fetchApplications = async () => {
     try {

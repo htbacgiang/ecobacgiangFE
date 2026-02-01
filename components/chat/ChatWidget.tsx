@@ -11,7 +11,7 @@ const ChatWidget: React.FC = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const user = useAuth();
+  const { user } = useAuth();
   const userAvatar = user?.avatar;
 
   const {

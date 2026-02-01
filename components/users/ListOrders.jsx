@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import OrderDetailsPopup from "./OrderDetailsPopup";
 import { paymentMethodText, orderStatusText, orderStatusColors } from "../../utils/mappings";
@@ -13,7 +13,7 @@ function formatCurrency(amount) {
 }
 
 export default function AdminOrdersPage() {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const [ordersByDate, setOrdersByDate] = useState({});
   const [dates, setDates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function AdminOrdersPage() {
     .reduce((sum, o) => sum + o.finalTotal, 0);
 
   if (status === "loading") return <p className="p-8">Đang xác thực...</p>;
-  if (!session) return <p className="p-8">Bạn cần đăng nhập.</p>;
+  if (!user) return <p className="p-8">Bạn cần đăng nhập.</p>;
 
   return (
     <div className="p-8">

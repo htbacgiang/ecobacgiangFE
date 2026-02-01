@@ -10,7 +10,7 @@ import {
   removeFromCart,
   setCart,
 } from "../../store/cartSlice";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { normalizeUnit } from "../../utils/normalizeUnit";
@@ -36,7 +36,7 @@ const ShoppingCart = ({ toggleCart }) => {
     };
   }, []);
   const dispatch = useDispatch();
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   // Lấy dữ liệu cart từ Redux
   const {
@@ -66,9 +66,9 @@ const ShoppingCart = ({ toggleCart }) => {
   // Đồng bộ coupon từ Redux (chỉ khi Redux có coupon và local chưa có)
   useEffect(() => {
     // Chỉ sync từ Redux nếu:
-    // 1. Có session và có coupon trong Redux
+    // 1. Có user và có coupon trong Redux
     // 2. Local state chưa có coupon hoặc khác với Redux
-    if (session?.user?.id && appliedCoupon && appliedCoupon.trim() !== '') {
+    if (user?.id && appliedCoupon && appliedCoupon.trim() !== '') {
       // Chỉ update nếu local state khác với Redux
       if (coupon !== appliedCoupon) {
         console.log("🔄 Syncing coupon from Redux:", appliedCoupon);
@@ -83,7 +83,7 @@ const ShoppingCart = ({ toggleCart }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync coupon from Redux; adding coupon would cause loop
-  }, [session?.user?.id, appliedCoupon, loadingCoupon]);
+  }, [user?.id, appliedCoupon, loadingCoupon]);
 
   // Các hàm xử lý tăng/giảm/xóa sản phẩm
   const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
@@ -104,11 +104,11 @@ const ShoppingCart = ({ toggleCart }) => {
   };
 
   const handleIncrease = async (productId, step = 1, unit = "") => {
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../lib/api-services");
-        const currentCart = await cartService.get(session.user.id);
+        const currentCart = await cartService.get(user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
         const currentQty = Number(productInCart?.quantity ?? 0);
         // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
@@ -116,7 +116,7 @@ const ShoppingCart = ({ toggleCart }) => {
           isKgUnit(unit) && step === 1 && currentQty === 0.5 ? 0.5 : step;
         let newQuantity = normalizeQuantity(currentQty + effectiveStep, unit);
         if (is100gUnit(unit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
-        const cart = await cartService.update(session.user.id, productId, newQuantity);
+        const cart = await cartService.update(user.id, productId, newQuantity);
         dispatch(setCart(cart));
       } catch (error) {
         console.error(error);
@@ -133,11 +133,11 @@ const ShoppingCart = ({ toggleCart }) => {
   };
 
   const handleDecrease = async (productId, step = 1, unit = "") => {
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../lib/api-services");
-        const currentCart = await cartService.get(session.user.id);
+        const currentCart = await cartService.get(user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
         const currentQuantity = Number(productInCart?.quantity ?? 0);
         // Logic giảm xuống 0.5kg khi đang là 1kg
@@ -145,11 +145,11 @@ const ShoppingCart = ({ toggleCart }) => {
         const newQuantity = Math.max(0, normalizeQuantity(currentQuantity - effectiveStep, unit));
 
         if (newQuantity === 0) {
-          await cartService.remove(session.user.id, productId);
-          const updatedCart = await cartService.get(session.user.id);
+          await cartService.remove(user.id, productId);
+          const updatedCart = await cartService.get(user.id);
           dispatch(setCart(updatedCart));
         } else {
-          const cart = await cartService.update(session.user.id, productId, newQuantity);
+          const cart = await cartService.update(user.id, productId, newQuantity);
           dispatch(setCart(cart));
         }
       } catch (error) {
@@ -163,12 +163,12 @@ const ShoppingCart = ({ toggleCart }) => {
   };
 
   const handleRemove = async (productId) => {
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../lib/api-services");
-        await cartService.remove(session.user.id, productId);
-        const updatedCart = await cartService.get(session.user.id);
+        await cartService.remove(user.id, productId);
+        const updatedCart = await cartService.get(user.id);
         dispatch(setCart(updatedCart));
         toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
       } catch (error) {
@@ -184,7 +184,7 @@ const ShoppingCart = ({ toggleCart }) => {
   // Hàm áp mã giảm giá
   const handleApplyCoupon = async () => {
     setLoadingCoupon(true);
-    if (!session?.user?.id) {
+    if (!user?.id) {
       toast.error("Vui lòng đăng nhập để áp dụng mã giảm giá.");
       setLoadingCoupon(false);
       return;
@@ -198,7 +198,7 @@ const ShoppingCart = ({ toggleCart }) => {
     try {
       const code = coupon.toUpperCase();
       const { cartService } = await import("../../lib/api-services");
-      const cart = await cartService.applyCoupon(session.user.id, {
+      const cart = await cartService.applyCoupon(user.id, {
         coupon: code,
       });
 
@@ -236,11 +236,11 @@ const ShoppingCart = ({ toggleCart }) => {
 
   // Hàm xóa mã giảm giá
   const handleRemoveCoupon = async () => {
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
         // Chỉ dùng Server API
         const { cartService } = await import("../../lib/api-services");
-        const cart = await cartService.applyCoupon(session.user.id, {
+        const cart = await cartService.applyCoupon(user.id, {
           coupon: "",
         });
 

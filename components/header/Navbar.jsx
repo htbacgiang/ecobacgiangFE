@@ -10,7 +10,7 @@ import ShoppingCart from "../products/ShoppingCart";
 import ResponsiveNavbar from "./ResponsiveNavbar";
 import UserDropdown from "./UserDropdown";
 import CrowdfundingSection from "./CrowdfundingSection";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { setCart } from "../../store/cartSlice";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -26,7 +26,8 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [productsCache, setProductsCache] = useState(null);
-  const { data: session } = useSession();
+  const { user: sessionUser, isAuthenticated } = useAuth();
+  const session = isAuthenticated ? { user: sessionUser } : null;
 
   const dropdownRef = useRef(null);
 
@@ -38,11 +39,11 @@ const Navbar = () => {
   // Sync cart with backend on login
   useEffect(() => {
     async function syncCart() {
-      if (session?.user?.id) {
+      if (sessionUser?.id) {
         try {
           // Chỉ dùng Server API
           const { cartService } = await import("../../lib/api-services");
-          const cart = await cartService.get(session.user.id);
+          const cart = await cartService.get(sessionUser.id);
           dispatch(setCart(cart));
         } catch (error) {
           // Chỉ log error, không hiển thị toast để tránh spam
@@ -58,7 +59,7 @@ const Navbar = () => {
       // Điều này cho phép người dùng chưa đăng nhập vẫn có thể thêm sản phẩm vào giỏ hàng
     }
     syncCart();
-  }, [session?.user?.id, dispatch]);
+  }, [sessionUser?.id, dispatch]);
 
   // Close user dropdown when clicking outside
   useEffect(() => {

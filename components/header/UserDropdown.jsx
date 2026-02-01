@@ -4,26 +4,33 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { FaRegUser, FaHeart, FaSignOutAlt, FaCrown, FaGift, FaShoppingBag, FaHistory, FaMapMarkerAlt, FaCreditCard, FaHeadset } from "react-icons/fa";
 import { MdSubscriptions, MdLocalOffer, MdNotifications } from "react-icons/md";
-import { useSession, signOut } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
+import { signOut } from "../../lib/auth-helper";
 
 const UserDropdown = ({ userDropdownOpen, toggleUserDropdown }) => {
-  const { data: session } = useSession();
+  const { user, rawUser, isAuthenticated } = useAuth();
   const router = useRouter();
+  const avatarUrl = rawUser?.image ?? user?.avatar;
+
+  const handleSignOut = () => {
+    toggleUserDropdown();
+    signOut({ callbackUrl: "/" });
+  };
 
   if (!userDropdownOpen) return null;
 
   return (
     <div className="absolute right-0 top-14 mt-2 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden backdrop-blur-md">
-      {session ? (
+      {isAuthenticated && user ? (
         <>
           {/* User Info Section */}
           <div className="bg-green-50 p-6 border-b border-green-200">
             <div className="flex items-center">
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-green-500 flex items-center justify-center shadow-lg ring-4 ring-green-100 relative">
-                  {session.user.image ? (
+                  {avatarUrl ? (
                     <Image
-                      src={session.user.image}
+                      src={avatarUrl}
                       alt="User Avatar"
                       fill
                       className="object-cover"
@@ -31,7 +38,7 @@ const UserDropdown = ({ userDropdownOpen, toggleUserDropdown }) => {
                     />
                   ) : (
                     <div className="w-full h-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold">
-                      {session.user.name ? session.user.name.charAt(0).toUpperCase() : "U"}
+                      {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
                 </div>
@@ -40,10 +47,10 @@ const UserDropdown = ({ userDropdownOpen, toggleUserDropdown }) => {
                 </div>
               </div>
               <div className="ml-4 flex-1">
-                <h4 className="font-bold text-gray-900 text-lg">{session.user.name}</h4>
-                <p className="text-sm text-gray-600">{session.user.email}</p>
+                <h4 className="font-bold text-gray-900 text-lg">{user.name}</h4>
+                <p className="text-sm text-gray-600">{user.email}</p>
                 <div className="flex items-center mt-2">
-                  <span className="text-xs text-green-600 font-medium uppercase">{session.user.role}</span>
+                  <span className="text-xs text-green-600 font-medium uppercase">{user.role}</span>
                 </div>
               </div>
             </div>
@@ -146,7 +153,7 @@ const UserDropdown = ({ userDropdownOpen, toggleUserDropdown }) => {
             {/* Logout Section */}
             <div className="mt-6 pt-4 border-t border-gray-100">
               <button 
-                onClick={() => signOut()}
+                onClick={handleSignOut}
                 className="w-full flex items-center p-3 rounded-2xl hover:bg-red-50 transition-all duration-300 group cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">

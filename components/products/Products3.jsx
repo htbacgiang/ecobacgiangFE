@@ -12,7 +12,7 @@ import {
 import ProductCard from "./ProductCard";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { fetchWishlistDB } from "../../store/wishlistSlice";
 import { useBestsellers } from "../../hooks/use-bestsellers";
 
@@ -36,7 +36,7 @@ export default function Product3() {
   const prevPageRef = useRef(currentPage);
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const { bestsellers, loading: bestsellersLoading } = useBestsellers();
 
   const itemsPerPage = 15;
@@ -48,7 +48,7 @@ export default function Product3() {
     if (userId) {
       dispatch(fetchWishlistDB(userId));
     }
-  }, [dispatch, session]);
+  }, [dispatch, user]);
 
   // Read category from URL query parameter and set selected category
   useEffect(() => {

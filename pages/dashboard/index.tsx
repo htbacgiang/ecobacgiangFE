@@ -7,29 +7,29 @@ import {
   OrderList,
 } from "../../components/admin/dashboard";
 
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (status === "loading") return;
     
-    if (!session) {
+    if (!user) {
       router.push("/dang-nhap");
       return;
     }
 
-    if ((session.user as any)?.role !== "admin") {
+    if ((user as any)?.role !== "admin") {
       router.push("/");
       return;
     }
 
     setIsLoading(false);
-  }, [session, status, router]);
+  }, [user, status, router]);
 
   // Loading state
   if (status === "loading" || isLoading) {
@@ -41,7 +41,7 @@ export default function Dashboard() {
   }
 
   // Not authenticated
-  if (!session) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-xl font-semibold">Vui lòng đăng nhập...</div>
@@ -50,7 +50,7 @@ export default function Dashboard() {
   }
 
   // Not admin
-  if ((session.user as any)?.role !== "admin") {
+  if ((user as any)?.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-xl font-semibold text-red-600">Bạn không có quyền truy cập trang này</div>

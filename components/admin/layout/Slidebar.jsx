@@ -2,7 +2,8 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
-import { signOut, useSession } from "next-auth/react";
+import useAuth from "../../../hooks/useAuth";
+import { signOut } from "../../../lib/auth-helper";
 import styles from "./Sidebar.module.css";
 
 import {
@@ -26,7 +27,8 @@ import { useRouter } from "next/router";
 export default function Sidebar() {
   const router = useRouter();
   const pathname = router.pathname;
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
+  const session = user ? { user } : null;
 
   const sildebarLinks = [
     {

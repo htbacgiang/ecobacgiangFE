@@ -9,11 +9,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { authService } from "../lib/api-services";
 import Link from "next/link";
 
-// Schema xác thực với Yup
+// Schema xác thực với Yup (OTP kiểm tra bằng state + disabled nút, không dùng Formik để tránh lỗi hooks)
 const resetPasswordValidation = Yup.object({
-  otp: Yup.string()
-    .required("Vui lòng nhập mã OTP.")
-    .length(6, "Mã OTP phải có 6 số."),
   newPassword: Yup.string()
     .required("Vui lòng nhập mật khẩu mới.")
     .min(6, "Mật khẩu phải có ít nhất 6 ký tự."),

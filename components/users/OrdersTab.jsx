@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import OrderDetailsPopup from "./OrderDetailsPopup";
@@ -15,8 +15,8 @@ function formatCurrency(amount) {
 }
 
 export default function OrdersTab() {
-  const { data: session, status } = useSession();
-  const userId = session?.user?.id;
+  const { user, status } = useAuth();
+  const userId = user?.id;
   const [orders, setOrders] = useState([]);
   const [allOrders, setAllOrders] = useState([]); // Lưu tất cả orders để filter
   const [loading, setLoading] = useState(false);
@@ -133,7 +133,7 @@ export default function OrdersTab() {
     setFilterType(filter);
   };
 
-  if (!session) {
+  if (!user) {
     return (
       <div className="p-4 md:p-8">
         <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 text-center">

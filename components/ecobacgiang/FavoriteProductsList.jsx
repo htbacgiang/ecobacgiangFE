@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FiMinus, FiPlus, FiHeart, FiShoppingBag, FiTrash2 } from "react-icons/fi";
@@ -10,7 +10,7 @@ import { addToCart, setCart, increaseQuantity, decreaseQuantity } from "../../st
 import { fetchWishlistDB, removeFromWishlistDB, optimisticRemoveFromWishlist } from "../../store/wishlistSlice";
 
 const FavoriteProductsList = () => {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,9 +23,9 @@ const FavoriteProductsList = () => {
 
   // Fetch wishlist khi component mount hoặc user thay đổi
   useEffect(() => {
-    if (session?.user?.id) {
+    if (user?.id) {
       setIsLoading(true);
-      dispatch(fetchWishlistDB(session.user.id))
+      dispatch(fetchWishlistDB(user.id))
         .unwrap()
         .catch((error) => {
           toast.error("Không thể tải danh sách yêu thích");
@@ -35,7 +35,7 @@ const FavoriteProductsList = () => {
           setIsLoading(false);
         });
     }
-  }, [session?.user?.id, dispatch]);
+  }, [user?.id, dispatch]);
 
   const handleAddToCart = async (product) => {
     // Kiểm tra tình trạng hàng trước khi cho phép thêm vào giỏ
@@ -44,7 +44,7 @@ const FavoriteProductsList = () => {
       return;
     }
     
-    const userId = session?.user?.id;
+    const userId = user?.id;
     // Kiểm tra an toàn cho image
     const imageArray = product.product?.image;
     const imagePath = Array.isArray(imageArray) && imageArray.length > 0 
@@ -92,13 +92,13 @@ const FavoriteProductsList = () => {
     }
     
     try {
-      if (session?.user) {
+      if (user) {
         // Chỉ dùng Server API
         const { cartService } = await import("../../lib/api-services");
-        const currentCart = await cartService.get(session.user.id);
+        const currentCart = await cartService.get(user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
         const newQuantity = (productInCart?.quantity || 0) + 1;
-        const cart = await cartService.update(session.user.id, productId, newQuantity);
+        const cart = await cartService.update(user.id, productId, newQuantity);
         dispatch(setCart(cart));
       } else {
         dispatch(increaseQuantity(productId));
@@ -113,10 +113,10 @@ const FavoriteProductsList = () => {
     const cartItem = cartItems.find((item) => item.product === productId);
     if (cartItem && cartItem.quantity <= 1) {
       try {
-        if (session?.user) {
+        if (user) {
           // Chỉ dùng Server API
           const { cartService } = await import("../../lib/api-services");
-          const cart = await cartService.remove(session.user.id, productId);
+          const cart = await cartService.remove(user.id, productId);
           dispatch(setCart(cart));
         } else {
           dispatch(decreaseQuantity(productId));
@@ -128,17 +128,17 @@ const FavoriteProductsList = () => {
       }
     } else {
       try {
-        if (session?.user) {
+        if (user) {
           // Chỉ dùng Server API
           const { cartService } = await import("../../lib/api-services");
-          const currentCart = await cartService.get(session.user.id);
+          const currentCart = await cartService.get(user.id);
           const productInCart = currentCart.products?.find(p => p.product.toString() === productId);
           const newQuantity = Math.max(0, (productInCart?.quantity || 0) - 1);
           if (newQuantity === 0) {
-            const cart = await cartService.remove(session.user.id, productId);
+            const cart = await cartService.remove(user.id, productId);
             dispatch(setCart(cart));
           } else {
-            const cart = await cartService.update(session.user.id, productId, newQuantity);
+            const cart = await cartService.update(user.id, productId, newQuantity);
             dispatch(setCart(cart));
           }
         } else {
@@ -152,7 +152,7 @@ const FavoriteProductsList = () => {
   };
 
   const handleRemoveFavorite = async (productId) => {
-    if (!session?.user?.id) {
+    if (!user?.id) {
       toast.error("Vui lòng đăng nhập để xóa sản phẩm");
       return;
     }
@@ -163,13 +163,13 @@ const FavoriteProductsList = () => {
     try {
       // Dùng Redux action để đồng bộ với các component khác
       await dispatch(
-        removeFromWishlistDB({ userId: session.user.id, productId })
+        removeFromWishlistDB({ userId: user.id, productId })
       ).unwrap();
       toast.success("Đã xóa khỏi danh sách yêu thích");
       // Redux state sẽ tự động cập nhật với full data từ Server API
     } catch (error) {
       // Rollback: Fetch lại wishlist để restore state
-      dispatch(fetchWishlistDB(session.user.id));
+      dispatch(fetchWishlistDB(user.id));
       toast.error("Không thể xóa sản phẩm khỏi danh sách yêu thích");
       console.error("Remove favorite error:", error);
     }

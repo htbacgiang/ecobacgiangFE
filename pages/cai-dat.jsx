@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import useAuth from '../hooks/useAuth';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Sidebar from '../components/admin/layout/Slidebar';
@@ -21,7 +21,11 @@ import {
 } from 'lucide-react';
 
 export default function CaiDat() {
-  const { data: session, status } = useSession();
+  const { user, isAuthenticated, status } = useAuth();
+  const session = useMemo(
+    () => (isAuthenticated && user ? { user } : null),
+    [isAuthenticated, user]
+  );
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);

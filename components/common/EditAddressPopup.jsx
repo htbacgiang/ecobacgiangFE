@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 
 export default function EditAddressPopup({
   isOpen,
@@ -10,7 +10,7 @@ export default function EditAddressPopup({
   setAddressData,
   refreshAddresses, // Hàm này sẽ được gọi để cập nhật danh sách địa chỉ (cho user đã đăng nhập) hoặc lưu vào state cho khách vãng lai
 }) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [dataAll, setDataAll] = useState([]);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function EditAddressPopup({
 
   const handleSubmit = async () => {
     // Nếu khách hàng đăng nhập, gọi API để lưu vào DB
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
         const { addressService } = await import("../../lib/api-services");
         

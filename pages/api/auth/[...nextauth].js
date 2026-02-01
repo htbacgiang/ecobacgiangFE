@@ -24,21 +24,19 @@ function generateDefaultPassword(userName) {
   return `${normalizedName}${randomNumber}`;
 }
 
-// Đảm bảo NEXTAUTH_URL đúng với cổng hiện tại
+// Chuẩn hóa URL và env (trim khoảng trắng trong .env tránh lỗi callback Google)
+const trimEnv = (v) => (typeof v === "string" ? v.trim() : v) || undefined;
 const getBaseUrl = () => {
-  // Kiểm tra xem NEXTAUTH_URL có được set không
-  if (process.env.NEXTAUTH_URL) {
-    // Nếu có set nhưng là port 3001, sửa lại thành 3000 trong development
-    if (process.env.NODE_ENV === "development" && process.env.NEXTAUTH_URL.includes(":3001")) {
-      return process.env.NEXTAUTH_URL.replace(":3001", ":3000");
+  const url = trimEnv(process.env.NEXTAUTH_URL);
+  if (url) {
+    if (process.env.NODE_ENV === "development" && url.includes(":3001")) {
+      return url.replace(":3001", ":3000");
     }
-    return process.env.NEXTAUTH_URL;
+    return url;
   }
-  // Trong development, mặc định sử dụng localhost:3000
   if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000";
   }
-  // Trong production, cần set NEXTAUTH_URL
   return "http://localhost:3000";
 };
 
@@ -106,9 +104,9 @@ export const authOptions = {
     }),
 
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
-      allowDangerousEmailAccountLinking: true, // Cho phép liên kết email trùng lặp
+      clientId: trimEnv(process.env.GOOGLE_ID),
+      clientSecret: trimEnv(process.env.GOOGLE_SECRET),
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {

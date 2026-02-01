@@ -6,7 +6,7 @@ import { FiMinus, FiPlus } from "react-icons/fi";
 import Link from "next/link";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import { normalizeUnit } from "../../utils/normalizeUnit";
 import {
@@ -31,13 +31,14 @@ const formatCurrency = (amount) => {
 
 const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
   const dispatch = useDispatch();
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
+  const session = user ? { user } : null;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mainImage, setMainImage] = useState(product?.image?.[0] || "/fallback-image.jpg");
 
   // Wishlist state (only for authenticated users)
   const wishlistItems = useSelector((state) => state.wishlist.wishlistItems) || [];
-  const isFavorite = session && status === "authenticated"
+  const isFavorite = user && (status === "authenticated" || !!user)
     ? Array.isArray(wishlistItems) && wishlistItems.some((item) => {
         if (!item || !item.product) return false;
         // Handle both object and string ID formats
@@ -90,12 +91,12 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
 
   // Favorite toggle
   const handleToggleFavorite = async () => {
-    if (status !== "authenticated" || !session?.user) {
+    if (!user) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm yêu thích", { autoClose: 3000 });
       return;
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     
     // Optimistic update - Cập nhật UI ngay lập tức
     if (isFavorite) {
@@ -140,7 +141,7 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
       return;
     }
     
-    const userId = session?.user?.id;
+    const userId = user?.id;
     try {
       if (userId) {
         // Thử dùng API server mới
@@ -187,23 +188,23 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
     }
     
     try {
-      if (session?.user) {
+      if (user) {
         // Thử dùng API server mới
         try {
           const { cartService } = await import("../../lib/api-services");
-          const currentCart = await cartService.get(session.user.id);
+          const currentCart = await cartService.get(user.id);
           const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
           const currentQty = Number(productInCart?.quantity ?? 0);
           const effectiveStep =
             isKgUnit(productUnit) && currentQty === 0.5 ? 0.5 : 1;
           let newQuantity = normalizeQuantity(currentQty + effectiveStep, productUnit);
           if (is100gUnit(productUnit)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
-          const cart = await cartService.update(session.user.id, product._id, newQuantity);
+          const cart = await cartService.update(user.id, product._id, newQuantity);
           dispatch(setCart(cart));
         } catch (apiError) {
           // Fallback về Next.js API
           const res = await axios.put(
-            `/api/cart/${session.user.id}/${product._id}`,
+            `/api/cart/${user.id}/${product._id}`,
             { type: "increase" }
           );
           dispatch(setCart(res.data));
@@ -222,11 +223,11 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
 
   const handleDecreaseQuantity = async () => {
     try {
-      if (session?.user) {
+      if (user) {
         // Thử dùng API server mới
         try {
           const { cartService } = await import("../../lib/api-services");
-          const currentCart = await cartService.get(session.user.id);
+          const currentCart = await cartService.get(user.id);
           const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
           const currentQty = Number(productInCart?.quantity ?? 0);
           const effectiveStep =
@@ -234,16 +235,16 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
           let newQuantity = Math.max(0, normalizeQuantity(currentQty - effectiveStep, productUnit));
           if (is100gUnit(productUnit)) newQuantity = Math.min(9, Math.max(0, Math.round(newQuantity)));
           if (newQuantity === 0) {
-            const cart = await cartService.remove(session.user.id, product._id);
+            const cart = await cartService.remove(user.id, product._id);
             dispatch(setCart(cart));
           } else {
-            const cart = await cartService.update(session.user.id, product._id, newQuantity);
+            const cart = await cartService.update(user.id, product._id, newQuantity);
             dispatch(setCart(cart));
           }
         } catch (apiError) {
           // Fallback về Next.js API
           const res = await axios.put(
-            `/api/cart/${session.user.id}/${product._id}`,
+            `/api/cart/${user.id}/${product._id}`,
             { type: "decrease" }
           );
           dispatch(setCart(res.data));

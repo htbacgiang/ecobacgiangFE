@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Home, Heart, ShoppingCart, User } from "lucide-react";
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
 import { useSelector, useDispatch } from "react-redux";
 import { setCart } from "../../store/cartSlice";
 import { fetchWishlistDB, setWishlist, clearWishlist } from "../../store/wishlistSlice";
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 const NavbarMobile = () => {
   const { asPath } = useRouter();
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const dispatch = useDispatch();
 
   // Redux cart and wishlist state
@@ -24,13 +24,13 @@ const NavbarMobile = () => {
   // Fetch wishlist and cart when user is authenticated
   useEffect(() => {
     const fetchCounts = async () => {
-      if (status !== "authenticated" || !session?.user?.id) {
+      if (!user?.id) {
         dispatch(clearWishlist());
         dispatch(setCart({ cartItems: [] }));
         return;
       }
 
-      const userId = session.user.id;
+      const userId = user.id;
       try {
         // Fetch wishlist
         await dispatch(fetchWishlistDB(userId)).unwrap();
@@ -60,7 +60,7 @@ const NavbarMobile = () => {
     };
 
     fetchCounts();
-  }, [status, session?.user?.id, dispatch]);
+  }, [status, user?.id, dispatch]);
 
   // Display wishlist errors
   useEffect(() => {

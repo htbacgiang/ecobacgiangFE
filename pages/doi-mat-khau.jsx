@@ -1,12 +1,11 @@
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
-import { getSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import Router from "next/router";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import { authService } from "../lib/api-services";
 
 // Schema validation với Yup
 const changePasswordValidation = Yup.object({
@@ -22,14 +21,19 @@ const changePasswordValidation = Yup.object({
     .oneOf([Yup.ref("newPassword"), null], "Mật khẩu xác nhận không khớp."),
 });
 
-export default function ChangePassword() {
+export default function ChangePasswordPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [status, setStatus] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !authService.getToken()) {
+      Router.replace("/dang-nhap?callbackUrl=/doi-mat-khau");
+    }
+  }, []);
 
   const toggleCurrentPasswordVisibility = () => {
     setShowCurrentPassword((prev) => !prev);
@@ -46,35 +50,26 @@ export default function ChangePassword() {
   const changePasswordHandler = async (values, setSubmitting) => {
     try {
       setStatus("Đang đổi mật khẩu...");
-      console.log("Submitting change password:", values); // Debug
-      const { data } = await axios.post(
-        `${baseUrl}/api/auth/change-password`,
-        {
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-          confirmNewPassword: values.confirmNewPassword,
-        },
-        { withCredentials: true } // Gửi cookie xác thực
+      const data = await authService.changePassword(
+        values.currentPassword,
+        values.newPassword,
+        values.confirmNewPassword
       );
-      console.log("Change password response:", data); // Debug
-      setSuccess(data.message);
+      setSuccess(data.message || "Đổi mật khẩu thành công!");
       setError("");
       setStatus("Đổi mật khẩu thành công!");
       toast.success("Đổi mật khẩu thành công!");
       setSubmitting(false);
-      setTimeout(() => {
-        Router.push("/dashboard");
-      }, 2000);
-    } catch (error) {
-      console.error("Change password error:", error.response?.data || error.message);
+      setTimeout(() => Router.push("/dashboard"), 2000);
+    } catch (err) {
+      console.error("Change password error:", err);
       setStatus("");
       setSuccess("");
-      setError(error.response?.data?.message || "Đã xảy ra lỗi.");
-      toast.error(error.response?.data?.message || "Đã xảy ra lỗi.");
+      const errMsg = err.message || "Đã xảy ra lỗi.";
+      setError(errMsg);
+      toast.error(errMsg);
       setSubmitting(false);
-      setTimeout(() => {
-        setError("");
-      }, 3000);
+      setTimeout(() => setError(""), 3000);
     }
   };
 
@@ -243,22 +238,6 @@ export default function ChangePassword() {
   );
 }
 
-export async function getServerSideProps(context) {
-  const { req } = context;
-  const session = await getSession({ req });
-  console.log("Change password session:", session); // Debug
-
-  if (!session) {
-    console.log("Redirecting to login");
-    return {
-      redirect: {
-        destination: "/dang-nhap",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+export async function getServerSideProps() {
+  return { props: {} };
 }

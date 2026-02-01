@@ -3,7 +3,9 @@ import Image from "next/image";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Camera, ChevronRight, Bell, Truck, Gift, Heart, Home, Layers, ShoppingCart, User, ArrowLeft, Settings, Edit3, MapPin, FileText, CreditCard } from "lucide-react";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import useAuth from "../../hooks/useAuth";
+import { signOut } from "../../lib/auth-helper";
 import axios from "axios";
 import { userService } from "../../lib/api-services";
 import { signInWithApiServer } from "../../lib/auth-helper";
@@ -20,7 +22,8 @@ import LoginComponent from "../../components/ecobacgiang/LoginComponent";
 import AccountSettingsList from "../../components/ecobacgiang/AccountSettingsList";
 
 export default function UserProfile() {
-  const { data: session, status } = useSession();
+  const { user, rawUser, status } = useAuth();
+  const session = user ? { user: { ...user, ...rawUser } } : null;
 
   const [selectedTab, setSelectedTab] = useState("account");
   const [tabLoading, setTabLoading] = useState(false);

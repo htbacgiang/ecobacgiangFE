@@ -11,7 +11,7 @@ import { Leaf, Sprout, Tractor, Truck, ChevronLeft, ChevronRight } from 'lucide-
 import { FaShoppingCart } from 'react-icons/fa';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import { useSession } from 'next-auth/react';
+import useAuth from '../../hooks/useAuth';
 import { addToCart, increaseQuantity, decreaseQuantity, setCart } from '../../store/cartSlice';
 import axios from 'axios';
 import parse from 'html-react-parser';
@@ -90,7 +90,7 @@ function StarRating({ rating, uniqueId }) {
 export default function ProductDetailPage({ product, relatedProducts = [] }) {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
@@ -164,7 +164,7 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
       return; // Không cho phép đặt hàng nếu hết hàng
     }
     
-    const userId = session?.user?.id;
+    const userId = user?.id;
     if (userId) {
       try {
         const { cartService } = await import("../../lib/api-services");
@@ -203,17 +203,17 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
       return; // Không cho phép tăng số lượng nếu hết hàng
     }
     
-    if (session && session.user) {
+    if (user) {
       try {
         const { cartService } = await import("../../lib/api-services");
-        const currentCart = await cartService.get(session.user.id);
+        const currentCart = await cartService.get(user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
         const currentQty = Number(productInCart?.quantity ?? 0);
         // Nếu đang 0.5kg và bấm "+": tăng lên 1kg trước, sau đó tăng theo 1 như cũ
         const effectiveStep = isKgUnit(unitValue) && currentQty === 0.5 ? 0.5 : 1;
         let newQuantity = normalizeQuantity(currentQty + effectiveStep, unitValue);
         if (is100gUnit(unitValue)) newQuantity = Math.min(9, Math.max(1, Math.round(newQuantity)));
-        const cart = await cartService.update(session.user.id, product._id, newQuantity);
+        const cart = await cartService.update(user.id, product._id, newQuantity);
         dispatch(setCart(cart));
         console.log("Increase quantity (API Server) success:", cart);
       } catch (error) {
@@ -228,20 +228,20 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
 
   // Handle Decrease Quantity
   const handleDecreaseQuantity = async (step = 1) => {
-    if (session && session.user) {
+    if (user) {
       try {
         const { cartService } = await import("../../lib/api-services");
-        const currentCart = await cartService.get(session.user.id);
+        const currentCart = await cartService.get(user.id);
         const productInCart = currentCart.products?.find(p => p.product.toString() === product._id);
         const currentQty = Number(productInCart?.quantity ?? 0);
         // Logic giảm xuống 0.5kg khi đang là 1kg
         const effectiveStep = isKgUnit(unitValue) && currentQty === 1 && step === 1 ? 0.5 : step;
         const newQuantity = Math.max(0, normalizeQuantity(currentQty - effectiveStep, unitValue));
         if (newQuantity === 0) {
-          const cart = await cartService.remove(session.user.id, product._id);
+          const cart = await cartService.remove(user.id, product._id);
           dispatch(setCart(cart));
         } else {
-          const cart = await cartService.update(session.user.id, product._id, newQuantity);
+          const cart = await cartService.update(user.id, product._id, newQuantity);
           dispatch(setCart(cart));
         }
         console.log("Decrease quantity (API Server) success");
