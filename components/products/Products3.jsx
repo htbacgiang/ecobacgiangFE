@@ -44,7 +44,7 @@ export default function Product3() {
 
   // Fetch wishlist when component mounts or userId changes
   useEffect(() => {
-    const userId = session?.user?.id;
+    const userId = user?.id;
     if (userId) {
       dispatch(fetchWishlistDB(userId));
     }
