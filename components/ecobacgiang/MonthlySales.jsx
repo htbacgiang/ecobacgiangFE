@@ -50,7 +50,8 @@ const MonthlySales = () => {
           rating: item.rating || 0,
           reviewCount: item.reviewCount || 0,
           price: item.price || 0,
-          promotionalPrice: item.promotionalPrice || 0,
+          // Giá gốc: ưu tiên giaGoc, fallback promotionalPrice cho dữ liệu cũ
+          giaGoc: item.giaGoc || item.promotionalPrice || 0,
           stockStatus: item.stockStatus || 'Còn hàng',
           slug: item.slug,
           unit: item.unit || 'unit',
@@ -174,11 +175,11 @@ const MonthlySales = () => {
                 product={{
                   _id: product._id,
                   name: product.name,
-                   image: product.image.map(url => getImageUrl(url)),
+                  image: product.image.map(url => getImageUrl(url)),
                   rating: product.rating,
                   reviewCount: product.reviewCount,
                   price: product.price,
-                  promotionalPrice: product.promotionalPrice,
+                  giaGoc: product.giaGoc,
                   stockStatus: product.stockStatus,
                   slug: product.slug,
                   unit: product.unit,

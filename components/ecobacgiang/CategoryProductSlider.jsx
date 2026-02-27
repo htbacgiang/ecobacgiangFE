@@ -61,22 +61,23 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
         
         // Map products (API already filtered by category if categoryName provided)
         const filteredProducts = data.products.map(product => ({
-            _id: product._id,
-            category: product.category,
-            categoryNameVN: product.categoryNameVN || product.category || 'Unknown',
-            name: product.name,
-            image: Array.isArray(product.image) 
-              ? product.image.map(url => getImageUrl(url))
-              : [getImageUrl(product.image)],
-            rating: product.rating,
-            reviewCount: product.reviewCount,
-            price: product.price,
-            promotionalPrice: product.promotionalPrice || 0,
-            stockStatus: product.stockStatus,
-            slug: product.slug,
-            unit: product.unit,
-            description: product.description,
-          }));
+          _id: product._id,
+          category: product.category,
+          categoryNameVN: product.categoryNameVN || product.category || 'Unknown',
+          name: product.name,
+          image: Array.isArray(product.image) 
+            ? product.image.map(url => getImageUrl(url))
+            : [getImageUrl(product.image)],
+          rating: product.rating,
+          reviewCount: product.reviewCount,
+          price: product.price,
+          // Giá gốc: ưu tiên giaGoc, fallback promotionalPrice cho dữ liệu cũ
+          giaGoc: product.giaGoc || product.promotionalPrice || 0,
+          stockStatus: product.stockStatus,
+          slug: product.slug,
+          unit: product.unit,
+          description: product.description,
+        }));
         
         setProducts(filteredProducts);
       } catch (err) {
@@ -160,7 +161,7 @@ const CategoryProductSlider = ({ categoryName, categoryTitle }) => {
                   rating: product.rating,
                   reviewCount: product.reviewCount,
                   price: product.price,
-                  promotionalPrice: product.promotionalPrice,
+                  giaGoc: product.giaGoc,
                   stockStatus: product.stockStatus,
                   slug: product.slug,
                   unit: product.unit,

@@ -648,7 +648,7 @@ export default function OrderList() {
 
   // Add product to order items
   const addProductToOrderItems = (product) => {
-    const price = product.promotionalPrice || product.price || 0;
+    const price = product.price || product.giaGoc || product.promotionalPrice || 0;
     const image = Array.isArray(product.image) ? product.image[0] : product.image;
     const newItem = {
       product: product._id,
@@ -1061,7 +1061,7 @@ export default function OrderList() {
       setNewOrderData({ ...newOrderData, orderItems: updatedItems });
     } else {
       // Add new product
-      const price = product.promotionalPrice || product.price || 0;
+      const price = product.price || product.giaGoc || product.promotionalPrice || 0;
       const unit = product.unit || 'Kg';
       const initialQuantity = isKgUnit(unit) ? 0.5 : 1;
       const newItem = {
@@ -1873,7 +1873,7 @@ export default function OrderList() {
                       >
                         <option value="">-- Chọn sản phẩm để thêm --</option>
                         {products.map((product) => {
-                          const price = product.promotionalPrice || product.price || 0;
+                          const price = product.price || product.giaGoc || product.promotionalPrice || 0;
                           const stockStatus = product.stockStatus || 'Còn hàng';
                           const isOutOfStock = stockStatus === 'Hết hàng';
                           return (
@@ -2396,7 +2396,7 @@ export default function OrderList() {
                         >
                           <option value="">-- Chọn sản phẩm để thêm --</option>
                           {products.map((product) => {
-                            const price = product.promotionalPrice || product.price || 0;
+                            const price = product.price || product.giaGoc || product.promotionalPrice || 0;
                             const stockStatus = product.stockStatus || 'Còn hàng';
                             const isOutOfStock = stockStatus === 'Hết hàng';
                             return (

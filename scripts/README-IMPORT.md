@@ -64,7 +64,7 @@ Mỗi sản phẩm trong file JSON có các trường:
 - `maSanPham` (required, unique): Mã sản phẩm
 - `name` (required): Tên sản phẩm
 - `price` (required): Giá sản phẩm
-- `promotionalPrice` (optional): Giá khuyến mãi
+- `giaGoc` (optional): Giá gốc (trước khuyến mãi). Hệ thống vẫn tự động đọc dữ liệu cũ ở trường `promotionalPrice` nếu có.
 - `category` (required): Mã danh mục (ví dụ: "rau-an-la")
 - `categoryNameVN` (required): Tên danh mục tiếng Việt (ví dụ: "Rau ăn lá")
 - `description` (required): Mô tả sản phẩm

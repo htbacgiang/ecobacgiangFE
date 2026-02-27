@@ -709,7 +709,6 @@ export async function getServerSideProps({ params }) {
       name: p.name,
       price: p.price,
       // Giá gốc: ưu tiên giaGoc nếu có, fallback promotionalPrice cho dữ liệu cũ
-      promotionalPrice: p.giaGoc || p.promotionalPrice || 0,
       giaGoc: p.giaGoc || p.promotionalPrice || 0,
       image: Array.isArray(p.image) && p.image.length > 0 ? p.image : [p.image || '/images/placeholder.jpg'],
       slug: p.slug || '',
@@ -775,7 +774,7 @@ export async function getServerSideProps({ params }) {
             availability: product.stockStatus === 'Còn hàng' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             priceCurrency: product.price ? 'VND' : undefined,
             // Giá niêm yết hiện tại là giá bán
-            price: product.price || product.promotionalPrice || 0,
+            price: product.price || product.giaGoc || 0,
           },
           aggregateRating: {
             '@type': 'AggregateRating',

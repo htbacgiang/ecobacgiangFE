@@ -139,7 +139,8 @@ export default function CreateProductPage() {
           category: product.category || '',
           categoryNameVN: selCat.categoryNameVN || product.categoryNameVN || '',
           price: product.price || 0,
-          giaGoc: product.promotionalPrice || 0,
+          // Giá gốc: ưu tiên giaGoc, fallback promotionalPrice cho dữ liệu cũ
+          giaGoc: product.giaGoc || product.promotionalPrice || 0,
           isNew: product.isNew || false,
           isFeatured: product.isFeatured || false,
           rating: product.rating || 0,
@@ -467,7 +468,8 @@ export default function CreateProductPage() {
         category: formData.category,
         categoryNameVN: formData.categoryNameVN,
         price: formData.price,
-        promotionalPrice: formData.giaGoc,
+        // Gửi trực tiếp giaGoc; schema dùng alias để tương thích dữ liệu cũ
+        giaGoc: formData.giaGoc,
         isNew: formData.isNew,
         isFeatured: formData.isFeatured,
         rating: Number(formData.rating),

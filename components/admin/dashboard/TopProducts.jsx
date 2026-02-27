@@ -93,7 +93,8 @@ export default function TopProducts() {
               products: data.map((item) => ({
                 title: item.name,
                 productCode: item._id,
-                price: item.price || item.promotionalPrice || 0,
+                // Giá hiển thị: giá bán, fallback giá gốc nếu cần
+                price: item.price || item.giaGoc || item.promotionalPrice || 0,
                 image: Array.isArray(item.image) ? item.image[0] : item.image || '/images/placeholder.jpg',
                 quantity: item.quantity || 0,
               })),
@@ -142,7 +143,8 @@ export default function TopProducts() {
         const mappedProducts = data.map((item) => ({
           title: item.name,
           productCode: item._id, // Using product ID as the product code
-          price: item.price || item.promotionalPrice || 0,
+          // Giá hiển thị: giá bán, fallback giá gốc nếu cần
+          price: item.price || item.giaGoc || item.promotionalPrice || 0,
           image: Array.isArray(item.image) ? item.image[0] : item.image || '/images/placeholder.jpg',
           quantity: item.quantity || 0,
         }));

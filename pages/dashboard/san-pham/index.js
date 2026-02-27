@@ -407,9 +407,15 @@ export default function ProductsListPage() {
                               <div className="font-medium">
                                 {(typeof product.price === 'number' ? product.price : 0).toLocaleString('vi-VN')} ₫
                               </div>
-                              {product.promotionalPrice > 0 && (
+                              {(product.giaGoc || product.promotionalPrice) > 0 && (
                                 <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                  Giá gốc: {(typeof product.promotionalPrice === 'number' ? product.promotionalPrice : 0).toLocaleString('vi-VN')} ₫
+                                  Giá gốc:{' '}
+                                  {(
+                                    typeof (product.giaGoc ?? product.promotionalPrice) === 'number'
+                                      ? (product.giaGoc ?? product.promotionalPrice)
+                                      : 0
+                                  ).toLocaleString('vi-VN')}{' '}
+                                  ₫
                                 </div>
                               )}
                             </div>
