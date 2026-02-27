@@ -470,11 +470,11 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
                   <div className="text-right">
                     {product.promotionalPrice > 0 ? (
                       <div>
-                        <div className="text-xl font-bold text-red-600">
-                          {product.promotionalPrice.toLocaleString('vi-VN')}đ
+                        <div className="text-xl font-bold text-green-600">
+                          {product.price.toLocaleString('vi-VN')}đ
                         </div>
                         <div className="text-sm text-gray-500 line-through">
-                          {product.price.toLocaleString('vi-VN')}đ
+                          {product.promotionalPrice.toLocaleString('vi-VN')}đ
                         </div>
                       </div>
                     ) : (

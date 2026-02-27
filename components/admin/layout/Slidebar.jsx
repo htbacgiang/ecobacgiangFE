@@ -77,23 +77,12 @@ export default function Sidebar() {
       href: "/dashboard/ke-toan-noi-bo",
     },
     {
-      title: "Danh sách ứng viên",
-      icon: Briefcase,
-      href: "/dashboard/danh-sach-ung-vien",
-    },
-
-    {
       title: "Cài đặt",
       icon: Settings,
       href: "/cai-dat",
     },
   ];
 
-  const catalogueLinks = [
-
-  
-
-  ];
   const [openMenu, setOpenMenu] = useState(false);
 
   // Hàm xử lý đăng xuất

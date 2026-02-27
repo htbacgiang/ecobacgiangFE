@@ -9,7 +9,7 @@ import { Eye, FileText, Mail, Phone, User, Briefcase, Calendar, Filter, X } from
 const API_BASE = process.env.NEXT_PUBLIC_API_SERVER_URL?.replace(/\/api\/?$/, '') || '';
 
 const RecruitmentManagement = () => {
-  const { user, status } = useAuth();
+  const { user, status, isAuthenticated } = useAuth();
   const router = useRouter();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +144,7 @@ const RecruitmentManagement = () => {
     return titles;
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' && !isAuthenticated) {
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-screen">
@@ -160,7 +160,7 @@ const RecruitmentManagement = () => {
     );
   }
 
-  if (!session || session.user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return null;
   }
 

@@ -5,10 +5,9 @@ import AdminLayout from '../../../components/layout/AdminLayout';
 import { useRouter } from 'next/router';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Editor from '../../../components/editor';
 import { debounce } from 'lodash';
 import { normalizeUnit } from '../../../utils/normalizeUnit';
-
+import Editor from '../../../components/editor/Editor';
 // Vietnamese to ASCII for slug generation
 const vietnameseToAscii = (str) => {
   const vietnameseMap = {
@@ -282,6 +281,15 @@ export default function CreateProductPage() {
     [checkSlug, addError]
   );
 
+  // Hủy mọi lần check slug còn pending (ví dụ sau khi submit thành công hoặc unmount)
+  useEffect(() => {
+    return () => {
+      if (debouncedCheckSlug && debouncedCheckSlug.cancel) {
+        debouncedCheckSlug.cancel();
+      }
+    };
+  }, [debouncedCheckSlug]);
+
   useEffect(() => {
     // Chỉ check slug nếu:
     // 1. Slug không rỗng
@@ -327,6 +335,10 @@ export default function CreateProductPage() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Hủy mọi lần debounce check slug đang chờ để tránh toast lỗi sau khi đã lưu thành công
+    if (debouncedCheckSlug && debouncedCheckSlug.cancel) {
+      debouncedCheckSlug.cancel();
+    }
     setErrors([]);
     setIsSubmitting(true);
 
@@ -382,8 +394,8 @@ export default function CreateProductPage() {
         setIsSubmitting(false);
         return;
       }
-      if (formData.promotionalPrice && formData.promotionalPrice > formData.price) {
-        addError('Giá khuyến mãi không được lớn hơn giá gốc');
+      if (formData.promotionalPrice && formData.promotionalPrice < formData.price) {
+        addError('Giá khuyến mãi phải lớn hơn giá gốc');
         setIsSubmitting(false);
         return;
       }
@@ -797,7 +809,7 @@ export default function CreateProductPage() {
 
                 <div className="form-group">
                   <label className="form-label required" htmlFor="price">
-                    Giá gốc
+                    Giá bán
                   </label>
                   <input
                     id="price"
@@ -817,7 +829,7 @@ export default function CreateProductPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div className="form-group">
                   <label className="form-label" htmlFor="promotionalPrice">
-                    Giá khuyến mãi
+                    Giá gốc
                   </label>
                   <input
                     id="promotionalPrice"
