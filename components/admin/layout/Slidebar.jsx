@@ -66,11 +66,7 @@ export default function Sidebar() {
       icon: TicketPercent,
       href: "/dashboard/ma-giam-gia",
     },
-    {
-      title: "Email đăng ký",
-      icon: Mail,
-      href: "/dashboard/danh-sach-email",
-    },
+
     {
       title: "Kế toán Nội bộ",
       icon: Calculator,

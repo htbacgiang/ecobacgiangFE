@@ -61,7 +61,7 @@ const initialState = {
   category: '',
   categoryNameVN: '',
   price: 0,
-  promotionalPrice: 0,
+  giaGoc: 0,
   isNew: false,
   isFeatured: false,
   rating: 0,
@@ -139,7 +139,7 @@ export default function CreateProductPage() {
           category: product.category || '',
           categoryNameVN: selCat.categoryNameVN || product.categoryNameVN || '',
           price: product.price || 0,
-          promotionalPrice: product.promotionalPrice || 0,
+          giaGoc: product.promotionalPrice || 0,
           isNew: product.isNew || false,
           isFeatured: product.isFeatured || false,
           rating: product.rating || 0,
@@ -385,17 +385,18 @@ export default function CreateProductPage() {
         return;
       }
       if (formData.price < 0) {
+        addError('Giá bán không được âm');
+        setIsSubmitting(false);
+        return;
+      }
+      if (formData.giaGoc < 0) {
         addError('Giá gốc không được âm');
         setIsSubmitting(false);
         return;
       }
-      if (formData.promotionalPrice < 0) {
-        addError('Giá khuyến mãi không được âm');
-        setIsSubmitting(false);
-        return;
-      }
-      if (formData.promotionalPrice && formData.promotionalPrice < formData.price) {
-        addError('Giá khuyến mãi phải lớn hơn giá gốc');
+      // Nếu có nhập giá gốc (> 0) thì giá gốc phải >= giá bán hiện tại
+      if (formData.giaGoc && formData.giaGoc < formData.price) {
+        addError('Giá gốc phải lớn hơn hoặc bằng giá bán hiện tại');
         setIsSubmitting(false);
         return;
       }
@@ -466,7 +467,7 @@ export default function CreateProductPage() {
         category: formData.category,
         categoryNameVN: formData.categoryNameVN,
         price: formData.price,
-        promotionalPrice: formData.promotionalPrice,
+        promotionalPrice: formData.giaGoc,
         isNew: formData.isNew,
         isFeatured: formData.isFeatured,
         rating: Number(formData.rating),
@@ -816,31 +817,31 @@ export default function CreateProductPage() {
                     type="number"
                     value={formData.price}
                     onChange={(e) => dispatch({ type: 'UPDATE_FIELD', field: 'price', value: Number(e.target.value) })}
-                    className={`form-input ${errors.some((e) => e.includes('Giá gốc')) ? 'error' : ''}`}
+                    className={`form-input ${errors.some((e) => e.includes('Giá bán')) ? 'error' : ''}`}
                     min="0"
                     placeholder="0"
                     required
-                    aria-label="Giá gốc"
-                    aria-describedby={errors.some((e) => e.includes('Giá gốc')) ? 'error-price' : undefined}
+                    aria-label="Giá bán"
+                    aria-describedby={errors.some((e) => e.includes('Giá bán')) ? 'error-price' : undefined}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div className="form-group">
-                  <label className="form-label" htmlFor="promotionalPrice">
+                  <label className="form-label" htmlFor="giaGoc">
                     Giá gốc
                   </label>
                   <input
-                    id="promotionalPrice"
+                    id="giaGoc"
                     type="number"
-                    value={formData.promotionalPrice}
-                    onChange={(e) => dispatch({ type: 'UPDATE_FIELD', field: 'promotionalPrice', value: Number(e.target.value) })}
-                    className={`form-input ${errors.some((e) => e.includes('Giá khuyến mãi')) ? 'error' : ''}`}
+                    value={formData.giaGoc}
+                    onChange={(e) => dispatch({ type: 'UPDATE_FIELD', field: 'giaGoc', value: Number(e.target.value) })}
+                    className={`form-input ${errors.some((e) => e.includes('Giá gốc')) ? 'error' : ''}`}
                     min="0"
                     placeholder="0"
-                    aria-label="Giá khuyến mãi"
-                    aria-describedby={errors.some((e) => e.includes('Giá khuyến mãi')) ? 'error-promotionalPrice' : undefined}
+                    aria-label="Giá gốc"
+                    aria-describedby={errors.some((e) => e.includes('Giá gốc')) ? 'error-giaGoc' : undefined}
                   />
                 </div>
 

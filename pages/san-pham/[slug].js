@@ -106,6 +106,8 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
   const isOutOfStock = product?.stockStatus === 'Hết hàng';
   const unitValue = normalizeUnit(product?.unit) || product?.unit || "";
   const unitDisplay = unitValue;
+  // Giá gốc: ưu tiên field giaGoc, fallback promotionalPrice cho dữ liệu cũ
+  const giaGoc = product?.giaGoc || product?.promotionalPrice || 0;
 
   // Đồng bộ logic đơn vị 0.5kg giống Cart
   const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
@@ -468,13 +470,13 @@ export default function ProductDetailPage({ product, relatedProducts = [] }) {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 font-medium">Giá:</span>
                   <div className="text-right">
-                    {product.promotionalPrice > 0 ? (
+                    {giaGoc > 0 ? (
                       <div>
                         <div className="text-xl font-bold text-green-600">
                           {product.price.toLocaleString('vi-VN')}đ
                         </div>
                         <div className="text-sm text-gray-500 line-through">
-                          {product.promotionalPrice.toLocaleString('vi-VN')}đ
+                          {giaGoc.toLocaleString('vi-VN')}đ
                         </div>
                       </div>
                     ) : (
@@ -706,7 +708,9 @@ export async function getServerSideProps({ params }) {
       _id: p._id || p.id,
       name: p.name,
       price: p.price,
-      promotionalPrice: p.promotionalPrice || 0,
+      // Giá gốc: ưu tiên giaGoc nếu có, fallback promotionalPrice cho dữ liệu cũ
+      promotionalPrice: p.giaGoc || p.promotionalPrice || 0,
+      giaGoc: p.giaGoc || p.promotionalPrice || 0,
       image: Array.isArray(p.image) && p.image.length > 0 ? p.image : [p.image || '/images/placeholder.jpg'],
       slug: p.slug || '',
       rating: p.rating || 0,
@@ -770,7 +774,8 @@ export async function getServerSideProps({ params }) {
             '@type': 'Offer',
             availability: product.stockStatus === 'Còn hàng' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             priceCurrency: product.price ? 'VND' : undefined,
-            price: product.promotionalPrice > 0 ? product.promotionalPrice : product.price,
+            // Giá niêm yết hiện tại là giá bán
+            price: product.price || product.promotionalPrice || 0,
           },
           aggregateRating: {
             '@type': 'AggregateRating',

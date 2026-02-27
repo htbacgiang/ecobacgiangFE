@@ -409,7 +409,7 @@ export default function ProductsListPage() {
                               </div>
                               {product.promotionalPrice > 0 && (
                                 <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                  Khuyến mãi: {(typeof product.promotionalPrice === 'number' ? product.promotionalPrice : 0).toLocaleString('vi-VN')} ₫
+                                  Giá gốc: {(typeof product.promotionalPrice === 'number' ? product.promotionalPrice : 0).toLocaleString('vi-VN')} ₫
                                 </div>
                               )}
                             </div>

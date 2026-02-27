@@ -69,7 +69,8 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
   const productReviewCount = product.reviewCount || 0;
   const productDescription = product.description || "";
   const productStockStatus = product.stockStatus;
-  const productPromotionalPrice = product.promotionalPrice || 0;
+  // Giá gốc: ưu tiên field giaGoc, fallback promotionalPrice cho dữ liệu cũ
+  const productGiaGoc = product.giaGoc || product.promotionalPrice || 0;
   const productUnit = normalizeUnit(product.unit) || "N/A";
 
   const isKgUnit = (unit) => (unit || "").toString().trim().toLowerCase() === "kg";
@@ -332,9 +333,9 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
                 </span>
               )}
             </span>
-            {productPromotionalPrice > 0 && (
+            {productGiaGoc > 0 && (
               <span className="text-red-500 line-through text-base ml-2">
-                {formatCurrency(productPromotionalPrice)}
+                {formatCurrency(productGiaGoc)}
               </span>
             )}
           </div>
@@ -572,9 +573,9 @@ const ProductCard = ({ product, view = "grid", isBestseller = false }) => {
                       </span>
                     )}
                   </span>
-                  {productPromotionalPrice > 0 && (
+                  {productGiaGoc > 0 && (
                     <span className="text-lg text-red-500 line-through ml-3">
-                      {formatCurrency(productPromotionalPrice)}
+                      {formatCurrency(productGiaGoc)}
                     </span>
                   )}
                 </div>
