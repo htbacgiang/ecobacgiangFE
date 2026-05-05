@@ -51,6 +51,7 @@ function createFallingItem(id) {
     pulseDuration: 1.5 + Math.random() * 1.5,
     pulseDelay: -(Math.random() * 2),
     showHint: isImage && Math.random() < 0.25, // 25% cơ hội hiện chữ
+    hintText: ['Bà Huyền', 'Dì Huyền', 'Chị Huyền', 'Huyền'][Math.floor(Math.random() * 4)] + ' click vô ảnh nhé!',
     hintColor,
   };
 }
@@ -296,7 +297,7 @@ const BirthdayPage = () => {
             />
             {item.showHint && (
               <span className="falling-hint" style={{ color: item.hintColor }}>
-                Huyền click vô ảnh nhé!
+                {item.hintText}
               </span>
             )}
           </div>
