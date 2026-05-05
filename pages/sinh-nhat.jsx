@@ -70,15 +70,6 @@ const BirthdayPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState('');
 
-  const toggleAudio = useCallback(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch(e => console.log('Audio error:', e));
-    }
-  }, [isPlaying]);
-
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -114,6 +105,16 @@ const BirthdayPage = () => {
     fallingTimerRef.current = setInterval(spawnOne, 3000);
   }, []);
 
+  const toggleAudio = useCallback(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(e => console.log('Audio error:', e));
+      startFallingEffect();
+    }
+  }, [isPlaying, startFallingEffect]);
+
   // Cleanup khi unmount
   useEffect(() => {
     return () => {
@@ -147,9 +148,7 @@ const BirthdayPage = () => {
 
     const confettiTimer = window.setTimeout(() => {
       if (!hasTriggeredRef.current) {
-        hasTriggeredRef.current = true;
         handleConfetti();
-        startFallingEffect();
       }
     }, 1500);
 
