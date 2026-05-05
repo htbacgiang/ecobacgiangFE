@@ -19,7 +19,8 @@
     "jsx": "preserve",
     "incremental": true,
     "strictNullChecks": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "next-env.d.ts",

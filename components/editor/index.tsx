@@ -138,7 +138,7 @@ const Editor: FC<Props> = ({
     ],
     
     editorProps: {
-      handleClick(view, pos, event) {
+      handleClick(view: any, pos: number, event: any) {
         const { state } = view;
         const selectionRange = getMarkRange(
           state.doc.resolve(pos),
